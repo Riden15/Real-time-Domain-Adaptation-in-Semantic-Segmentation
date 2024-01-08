@@ -186,7 +186,7 @@ class FeatureFusionModule(nn.Module):
         feat_atten = torch.mul(feat, atten)
         feat_out = feat_atten + feat
         return feat_out
-# prova
+
     def init_weight(self):
         for ly in self.children():
             if isinstance(ly, nn.Conv2d):
