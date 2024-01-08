@@ -127,7 +127,7 @@ class STDCNet813(nn.Module):
             block = AddBottleneck
         self.use_conv_last = use_conv_last
         self.features = self._make_layers(base, layers, block_num, block)
-        self.conv_last = ConvX(base * 16, max(1024, base * 16), 1, 1)
+        self.conv_last = ConvX(base * 16, max(1024, base * 16), 1, 1)  # ConvX6
         self.gap = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Linear(max(1024, base * 16), max(1024, base * 16), bias=False)
         self.bn = nn.BatchNorm1d(max(1024, base * 16))
@@ -135,6 +135,7 @@ class STDCNet813(nn.Module):
         self.dropout = nn.Dropout(p=dropout)
         self.linear = nn.Linear(max(1024, base * 16), num_classes, bias=False)
 
+        # if I understand correctly, these are the 5 stages
         self.x2 = nn.Sequential(self.features[:1])
         self.x4 = nn.Sequential(self.features[1:2])
         self.x8 = nn.Sequential(self.features[2:4])
@@ -171,9 +172,12 @@ class STDCNet813(nn.Module):
 
     def _make_layers(self, base, layers, block_num, block):
         features = []
-        features += [ConvX(3, base // 2, 3, 2)]
-        features += [ConvX(base // 2, base, 3, 2)]
+        features += [ConvX(3, base // 2, 3, 2)]  # ConvX1
+        features += [ConvX(base // 2, base, 3, 2)]  # ConvX2
 
+        # if I understand correctly, here we are creating Stage 1, 2 and 3, and each stage is composed of 2 STDM blocks.
+        # the layer array, in fact, is used to define the number of SDTDM blocks in each stage.
+        # the block class is an STDM block.
         for i, layer in enumerate(layers):
             for j in range(layer):
                 if i == 0 and j == 0:

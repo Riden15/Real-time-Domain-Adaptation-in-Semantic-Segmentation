@@ -110,7 +110,6 @@ class ContextPath(nn.Module):
         self.conv_head16 = ConvBNReLU(128, 128, ks=3, stride=1, padding=1)
         self.conv_avg = ConvBNReLU(inplanes, 128, ks=1, stride=1, padding=0)
 
-
         self.init_weight()
 
     def forward(self, x):
