@@ -2,7 +2,7 @@ import torch.nn as nn
 from torchsummary import summary
 
 class Discriminator(nn.Module):
-    def __init__(self, in_channels=3, out_channels=1, stride=2, padding=1, kernel_size=4, scale_factor=32):
+    def __init__(self, in_channels, out_channels=1, stride=2, padding=1, kernel_size=4, scale_factor=32):
         super(Discriminator, self).__init__()
             # Define the convolutional layers
         self.conv_layers = nn.Sequential(
@@ -34,5 +34,6 @@ class Discriminator(nn.Module):
         x = self.upsample(x)
         return x
     
-model = Discriminator()
-summary(model, input_size=(3, 128, 64))
+# input_channels = 19
+# model = Discriminator(in_channels=input_channels)
+# summary(model, input_size=(19, 128, 64))
