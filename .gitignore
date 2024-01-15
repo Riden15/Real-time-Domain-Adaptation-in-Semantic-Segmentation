@@ -154,6 +154,7 @@ cython_debug/
 
 #Added by Nik
 Cityscapes
+GTA5
 *.ipynb
 
 # PyCharm

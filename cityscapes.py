@@ -18,7 +18,8 @@ class CityScapes(Dataset):
         self.mode = mode
         self.data_path = "Cityscapes/images/"+self.mode
         self.label_path = "Cityscapes/gtFine/"+self.mode
-        self.data = list(pathlib.Path(self.data_path).glob("*/*.png"))
+        self.data = list(pathlib.Path(self.data_path).glob("*/*.png")) #glob finds all the things
+         # in the path that satisfies the regex, in this case */*.png (all the images are in png)
         self.label = list(pathlib.Path(self.label_path).glob("*/*.png"))
 
     def __getitem__(self, idx):
