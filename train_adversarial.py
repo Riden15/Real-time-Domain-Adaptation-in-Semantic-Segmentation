@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 from torch.utils.data import DataLoader
 import logging
 import numpy as np
@@ -7,53 +8,116 @@ import torch.cuda.amp as amp
 from utils import poly_lr_scheduler
 from tqdm import tqdm
 
+lambda_adv = 0.001  # Define the weight of the adversarial loss
+lambda_seg = 1  # Define the weight of the segmentation loss
 
 logger = logging.getLogger()
 
-def train(args, model, optimizer, dataloader_train):
+def train(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dataloader_cityscapes):
     writer = SummaryWriter(comment=''.format(args.optimizer))
 
-    scaler = amp.GradScaler()# Initialize gradient scaler for mixed precision training
+    scaler = amp.GradScaler() # Initialize gradient scaler for mixed precision training
+    D.train() # Set the model to training mode
 
-    loss_func = torch.nn.CrossEntropyLoss(ignore_index=255)  # Define the loss function
+    loss_func_seg = torch.nn.CrossEntropyLoss(ignore_index=255)  # Define the loss function for the segmentation model
+    loss_func_d = nn.BCEWithLogitsLoss() # Define the loss function for the discriminator
+    loss_func_adv = nn.BCEWithLogitsLoss() # Define the loss function for the adversarial loss
+    
     max_miou = 0  # Variable to store the maximum mean IoU
     step = 0  # Variable to count training steps
+    
     for epoch in range(args.num_epochs):
-        lr = poly_lr_scheduler(optimizer, args.learning_rate, iter=epoch, max_iter=args.num_epochs)  # Update learning rate
-        model.train()  # Set the model to training mode
-        tq = tqdm(total=len(dataloader_train) * args.batch_size)  # Initialize tqdm progress bar
-        tq.set_description('epoch %d, lr %f' % (epoch, lr))
+        lr_G = poly_lr_scheduler(optimizer_G, args.learning_rate, iter=epoch, max_iter=args.num_epochs)  # Update learning rate
+        lr_D = poly_lr_scheduler(optimizer_D, args.learning_rate, iter=epoch, max_iter=args.num_epochs)  # Update learning rate
+        tq = tqdm(total=len(dataloader_gta5) + len(dataloader_cityscapes) * args.batch_size)  # Initialize tqdm progress bar
+        tq.set_description('epoch %d, lr_G %f,  lr_D%f' % (epoch, lr_G, lr_D))
         loss_record = []  # List to record loss values
-        for i, (data, label) in enumerate(dataloader_train):
-            data = data.cuda() # Move data to GPU
-            label = label.long().cuda() # Move labels to GPU
-            optimizer.zero_grad() # Zero the gradients
-
-            with amp.autocast():
-                output, out16, out32 = model(data)  # Get predictions from the model at multiple scales
-                # Calculate loss at multiple scales
-                loss1 = loss_func(output, label.squeeze(1))  
-                loss2 = loss_func(out16, label.squeeze(1))
-                loss3 = loss_func(out32, label.squeeze(1))
-                loss = loss1 + loss2 + loss3  # Combine losses
-
-            scaler.scale(loss).backward()  # Scale loss and perform backpropagation
-            scaler.step(optimizer)  # Perform optimizer step
-            scaler.update()  # Update the scaler
-
-            tq.update(args.batch_size)  # Update progress bar
-            tq.set_postfix(loss='%.6f' % loss)  # Display loss in progress bar
-            step += 1
-            writer.add_scalar('loss_step', loss, step)  # Write loss to tensorboard
-            loss_record.append(loss.item())
+        
+        for i, (data_gta5, data_cityscapes) in enumerate(zip(dataloader_gta5, dataloader_cityscapes)):
+            data_gta5 = data_gta5.cuda()  # Move GTA5 data to GPU
+            data_gta5, label_gta5 = data_gta5  # Unpack GTA5 data
+            data_cityscapes = data_cityscapes.cuda()  # Move Cityscapes data to GPU
+            data_cityscapes, _ = data_cityscapes  # Unpack Cityscapes data
+            optimizer_G.zero_grad()  # Zero the gradients
             
-        loss_train_mean = np.mean(loss_record)  # Calculate mean loss for the epoch
-        writer.add_scalar('epoch/loss_epoch_train', float(loss_train_mean), epoch)  # Write mean loss to tensorboard
+            G.train() # Set the model to training mode
+            # Train the segmentation model with GTA5 data
+            with amp.autocast():
+                output_gta5, out16_gta5, out32_gta5 = G(data_gta5)  # Get predictions from the model at multiple scales
+                # Calculate loss at multiple scales
+                loss1_gta5 = loss_func_seg(output_gta5, label_gta5.squeeze(1))
+                loss2_gta5 = loss_func_seg(out16_gta5, label_gta5.squeeze(1))
+                loss3_gta5 = loss_func_seg(out32_gta5, label_gta5.squeeze(1))
+                loss_gta5 = loss1_gta5 + loss2_gta5 + loss3_gta5  # Combine losses
+            
+            scaler.scale(loss_gta5).backward()  # Scale loss and perform backpropagation
+            scaler.step(optimizer_G)  # Perform optimizer step
+        
+            # Get predictions from the segmentation model on Cityscapes data
+            G.eval()  # Set the model to evaluation mode
+            with torch.no_grad():
+                output_cityscapes, out16_cityscapes, out32_cityscapes = G(data_cityscapes)
+            
+            # Train the discriminator with GTA5 data
+            D.train()  # Set the model to training mode
+            # Forward pass of GTA5 data through the discriminator
+            outputs_gta5 = D(output_gta5.detach())
+            out16_gta5 = D(out16_gta5.detach())
+            out32_gta5 = D(out32_gta5.detach())
+            # Calculate loss for GTA5 data
+            labels_gta5 = torch.ones(outputs_gta5.size(0), 1, outputs_gta5.size(2), outputs_gta5.size(3)).cuda()  # Labels are 1 for GTA5 data
+            loss_d_gta5 = loss_func_d(outputs_gta5, labels_gta5)
+            loss_d_gta5 += loss_func_d(out16_gta5, labels_gta5)
+            loss_d_gta5 += loss_func_d(out32_gta5, labels_gta5)
+            
+            # Train the discriminator with Cityscapes data
+            # Forward pass of Cityscapes data through the discriminator
+            outputs_cityscapes = D(output_cityscapes.detach())
+            out16_cityscapes = D(out16_cityscapes.detach())
+            out32_cityscapes = D(out32_cityscapes.detach())
+            # Calculate loss for Cityscapes data
+            labels_cityscapes = torch.zeros(outputs_cityscapes.size(0), 1, outputs_cityscapes.size(2), outputs_cityscapes.size(3)).cuda()  # Labels are 0 for Cityscapes data
+            loss_d_cityscapes = loss_func_d(outputs_cityscapes, labels_cityscapes)
+            loss_d_cityscapes += loss_func_d(out16_cityscapes, labels_cityscapes)
+            loss_d_cityscapes += loss_func_d(out32_cityscapes, labels_cityscapes)
+            
+            # Combine the losses
+            loss_d = loss_d_gta5 + loss_d_cityscapes
+            
+            optimizer_D.zero_grad()  # Zero the gradients
+            scaler.scale(loss_d).backward()  # Scale loss and perform backpropagation
+            scaler.step(optimizer_D)  # Perform optimizer step
+            
+            # Calculate the adversarial loss
+            loss_adv_cityscapes = loss_func_adv(outputs_cityscapes, labels_gta5)
+            loss_adv_cityscapes16 = loss_func_adv(out16_cityscapes, labels_gta5)
+            loss_adv_cityscapes32 = loss_func_adv(out32_cityscapes, labels_gta5)
+            
+            loss_adv = loss_adv_cityscapes * lambda_adv + loss_adv_cityscapes16 * lambda_adv + loss_adv_cityscapes32 * lambda_adv
+            total_loss = loss_gta5 * lambda_seg + loss_adv
+            
+            G.train()
+            
+            optimizer_G.zero_grad()  # Zero the gradients
+            # backpropagation for adversarial loss to G model and not D model
+            scaler.scale(total_loss).backward()
+            scaler.step(optimizer_G)
+            scaler.update()
+            
+            tq.update(args.batch_size)
+            tq.set_postfix(loss='%.6f' % total_loss)
+            step += 1
+            writer.add_scalar('loss_step', total_loss, step)
+            loss_record.append(total_loss.item())
+            
+        tq.close()
+        loss_train_mean = np.mean(loss_record)
+        writer.add_scalar('epoch/loss_epoch_train', float(loss_train_mean), epoch)
+        
         print('loss for train : %f' % (loss_train_mean))
-
-        # Save model checkpoint periodically
         if epoch % args.checkpoint_step == 0 and epoch != 0:
             import os
             if not os.path.isdir(args.save_model_path):
                 os.mkdir(args.save_model_path)
-            torch.save(model.module.state_dict(), os.path.join(args.save_model_path, 'latest.pth'))
+            torch.save(G.module.state_dict(), os.path.join(args.save_model_path, 'G.pth'))
+            torch.save(D.module.state_dict(), os.path.join(args.save_model_path, 'D.pth'))
