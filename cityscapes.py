@@ -1,11 +1,9 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
-import torch
 from torch.utils.data import Dataset
 import pandas as pd
 from PIL import Image
 import pathlib
-import os
 
 def pil_loader(path):
     with open(path, 'rb') as f:
@@ -13,7 +11,7 @@ def pil_loader(path):
         return img.convert('RGB')
 
 class CityScapes(Dataset):
-    def __init__(self, mode):
+    def __init__(self, mode): #mode is "train" or "val"
         super(CityScapes, self).__init__()
         if mode != "train" and mode != "val":
             return -1
