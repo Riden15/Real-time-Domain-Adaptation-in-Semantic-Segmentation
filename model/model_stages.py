@@ -6,8 +6,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
+from torchsummary import summary
 
-from .stdcnet import STDCNet813
+from stdcnet import STDCNet813
 
 
 BatchNorm2d = nn.BatchNorm2d
@@ -264,4 +265,5 @@ class BiSeNet(nn.Module):
         return wd_params, nowd_params, lr_mul_wd_params, lr_mul_nowd_params
 
 
-
+model = BiSeNet(backbone='CatNetSmall', n_classes=19, pretrain_model='')
+summary(model, input_size=(3, 1024, 512))
