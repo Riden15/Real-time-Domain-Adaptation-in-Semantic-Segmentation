@@ -8,10 +8,10 @@ import torch.nn.functional as F
 import torchvision
 from torchsummary import summary
 
-from stdcnet import STDCNet813
-
+from model.stdcnet import STDCNet813
 
 BatchNorm2d = nn.BatchNorm2d
+
 
 class ConvBNReLU(nn.Module):
     def __init__(self, in_chan, out_chan, ks=3, stride=1, padding=1, *args, **kwargs):
@@ -221,7 +221,6 @@ class BiSeNet(nn.Module):
         sp16_inplanes = 512
         inplane = sp8_inplanes + conv_out_inplanes
 
-
         self.ffm = FeatureFusionModule(inplane, 256)
         self.conv_out = BiSeNetOutput(256, 256, n_classes)
         self.conv_out16 = BiSeNetOutput(conv_out_inplanes, 64, n_classes)
@@ -263,7 +262,3 @@ class BiSeNet(nn.Module):
                 wd_params += child_wd_params
                 nowd_params += child_nowd_params
         return wd_params, nowd_params, lr_mul_wd_params, lr_mul_nowd_params
-
-
-model = BiSeNet(backbone='CatNetSmall', n_classes=19, pretrain_model='')
-summary(model, input_size=(3, 1024, 512))

@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
+from torchsummary import summary
 from model.model_stages import BiSeNet
 from cityscapes import CityScapes
 import torch
@@ -12,7 +13,6 @@ import torch.cuda.amp as amp
 from utils import poly_lr_scheduler
 from utils import reverse_one_hot, compute_global_accuracy, fast_hist, per_class_iu
 from tqdm import tqdm
-
 
 logger = logging.getLogger()
 
@@ -112,6 +112,7 @@ def train(args, model, optimizer, dataloader_train, dataloader_val):
             writer.add_scalar('epoch/precision_val', precision, epoch)
             writer.add_scalar('epoch/miou val', miou, epoch)
 
+
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
         return True
@@ -128,23 +129,23 @@ def parse_args():
                        dest='mode',
                        type=str,
                        default='train',
-    )
+                       )
 
     parse.add_argument('--backbone',
                        dest='backbone',
                        type=str,
                        default='CatmodelSmall',
-    )
+                       )
     parse.add_argument('--pretrain_path',
-                      dest='pretrain_path',
-                      type=str,
-                      default='',
-    )
+                       dest='pretrain_path',
+                       type=str,
+                       default='',
+                       )
     parse.add_argument('--use_conv_last',
                        dest='use_conv_last',
                        type=str2bool,
                        default=False,
-    )
+                       )
     parse.add_argument('--num_epochs',
                        type=int, default=300,
                        help='Number of epochs to train for')
@@ -173,9 +174,9 @@ def parse_args():
                        default=2,
                        help='Number of images in each batch')
     parse.add_argument('--learning_rate',
-                        type=float,
-                        default=0.01,
-                        help='learning rate used for train')
+                       type=float,
+                       default=0.01,
+                       help='learning rate used for train')
     parse.add_argument('--num_workers',
                        type=int,
                        default=4,
@@ -205,7 +206,6 @@ def parse_args():
                        default='crossentropy',
                        help='loss function')
 
-
     return parse.parse_args()
 
 
@@ -219,26 +219,27 @@ def main():
 
     train_dataset = CityScapes(mode)
     dataloader_train = DataLoader(train_dataset,
-                    batch_size=args.batch_size,
-                    shuffle=False,
-                    num_workers=args.num_workers,
-                    pin_memory=False,
-                    drop_last=True)
+                                  batch_size=args.batch_size,
+                                  shuffle=False,
+                                  num_workers=args.num_workers,
+                                  pin_memory=False,
+                                  drop_last=True)
 
     val_dataset = CityScapes(mode='val')
     dataloader_val = DataLoader(val_dataset,
-                       batch_size=1,
-                       shuffle=False,
-                       num_workers=args.num_workers,
-                       drop_last=False)
+                                batch_size=1,
+                                shuffle=False,
+                                num_workers=args.num_workers,
+                                drop_last=False)
 
     ## model
-    model = BiSeNet(backbone=args.backbone, n_classes=n_classes, pretrain_model=args.pretrain_path, use_conv_last=args.use_conv_last)
+    model = BiSeNet(backbone=args.backbone, n_classes=n_classes, pretrain_model=args.pretrain_path,
+                    use_conv_last=args.use_conv_last)
 
     if torch.cuda.is_available() and args.use_gpu:
         model = torch.nn.DataParallel(model).cuda()
 
-    ## optimizer
+    # optimizer
     # build optimizer
     if args.optimizer == 'rmsprop':
         optimizer = torch.optim.RMSprop(model.parameters(), args.learning_rate)
@@ -255,5 +256,9 @@ def main():
     # final test
     val(args, model, dataloader_val)
 
+
 if __name__ == "__main__":
-    main()
+    # main()
+    model = BiSeNet(backbone='CatNetSmall', n_classes=19, pretrain_model='')
+    model.to('cuda')
+    summary(model, input_size=(3, 224, 224))
