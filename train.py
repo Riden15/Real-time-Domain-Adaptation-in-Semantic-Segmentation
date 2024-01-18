@@ -80,6 +80,8 @@ def train(args, model, optimizer, dataloader_train, dataloader_val):
 
             with amp.autocast():
                 output, out16, out32 = model(data)
+                print(label.shape)
+                print(output.shape)
                 loss1 = loss_func(output, label.squeeze(1))
                 loss2 = loss_func(out16, label.squeeze(1))
                 loss3 = loss_func(out32, label.squeeze(1))
@@ -149,7 +151,8 @@ def parse_args():
                        default=False,
                        )
     parse.add_argument('--num_epochs',
-                       type=int, default=300,
+                       type=int,
+                       default=300,
                        help='Number of epochs to train for')
     parse.add_argument('--epoch_start_i',
                        type=int,
@@ -262,10 +265,10 @@ def main():
         return None
 
     ## train loop
-    train(args, model, optimizer, dataloader_train, dataloader_val)
+    #train(args, model, optimizer, dataloader_train, dataloader_val)
 
     # final test
-    val(args, model, dataloader_val)
+    # val(args, model, dataloader_val)
 
     summary(model, input_size=(2, 3, 224, 224), col_names=["input_size", "output_size", "num_params", "trainable"],
     col_width=20, row_settings=["var_names"])

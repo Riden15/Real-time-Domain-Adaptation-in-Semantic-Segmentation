@@ -5,12 +5,13 @@ from torch.utils.data import DataLoader, TensorDataset
 from model.discriminator import Discriminator
 
 # Define the loss criterion
-criterion = nn.BCEWithLogitsLoss() # Why not SDG?
+criterion = nn.BCEWithLogitsLoss()
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 print(f"Using device: {device}")
 
 
-def train_discriminator(discriminator, data_loader_source, data_loader_target, optimizer, epochs=1, criterion=criterion, device=device):
+def train_discriminator(discriminator, data_loader_source, data_loader_target, optimizer, epochs=1, criterion=criterion,
+                        device=device):
     """
     Trains the discriminator model.
 
@@ -31,17 +32,20 @@ def train_discriminator(discriminator, data_loader_source, data_loader_target, o
     # Training loop for the specified number of epochs
     for epoch in range(epochs):
         total_loss = 0  # Initialize total loss for the epoch
-        total_steps = len(data_loader_source) + len(data_loader_target)  # Total steps = number of batches in source and target loaders
+        total_steps = len(data_loader_source) + len(
+            data_loader_target)  # Total steps = number of batches in source and target loaders
 
         # Create a tqdm progress bar for visualizing progress in each epoch
-        progress_bar = tqdm(total=total_steps, desc=f"Epoch {epoch+1}/{epochs}", leave=False)
+        progress_bar = tqdm(total=total_steps, desc=f"Epoch {epoch + 1}/{epochs}", leave=False)
 
         # Iterate over both source and target domain data loaders
         for source_data, target_data in zip(data_loader_source, data_loader_target):
             # Handle data from the source domain
             _, seg_source = source_data  # Unpack source domain data (images, labels), labels are ignored
+            # R: seg_source are the labels
             seg_source = seg_source.to(device)  # Move source images to the device
-            labels_source = torch.ones(seg_source.size(0), 1, seg_source.size(2), seg_source.size(3)).to(device)  # Labels are 1 for source domain data
+            labels_source = torch.ones(seg_source.size(0), 1, seg_source.size(2), seg_source.size(3)).to(
+                device)  # Labels are 1 for source domain data
 
             # Zero the gradients of the optimizer
             optimizer.zero_grad()
@@ -57,7 +61,8 @@ def train_discriminator(discriminator, data_loader_source, data_loader_target, o
             # Handle data from the target domain
             _, seg_target = target_data  # Unpack target domain data (images, labels), labels are ignored
             seg_target = seg_target.to(device)  # Move target images to the device
-            labels_target = torch.zeros(seg_target.size(0), 1, seg_target.size(2), seg_target.size(3)).to(device)  # Labels are 0 for target domain data
+            labels_target = torch.zeros(seg_target.size(0), 1, seg_target.size(2), seg_target.size(3)).to(
+                device)  # Labels are 0 for target domain data
             # Forward pass of target images through the discriminator
             outputs_target = discriminator(seg_target)
             # Calculate loss for target domain data
@@ -75,11 +80,12 @@ def train_discriminator(discriminator, data_loader_source, data_loader_target, o
         # Close the progress bar at the end of the epoch
         progress_bar.close()
         # Print the average loss for the epoch
-        print(f"Epoch {epoch+1}/{epochs} - Training loss: {total_loss / total_steps}")
+        print(f"Epoch {epoch + 1}/{epochs} - Training loss: {total_loss / total_steps}")
+
 
 # Dummy data generator
 def generate_dummy_data(batch_size, image_size=(3, 512, 256), num_batches=10, classes=19):
-     # Generating random tensors as images
+    # Generating random tensors as images
     images = torch.randn(num_batches * batch_size, *image_size)
     # Generating random semantic segmentation labels with shape (batch_size, classes, height, width)
     labels = torch.randint(0, classes, (num_batches * batch_size, classes, *image_size[1:]))
@@ -106,4 +112,5 @@ discriminator = Discriminator(in_channels=classes)
 optimizer = torch.optim.Adam(discriminator.parameters(), lr=0.001, betas=(0.9, 0.999))
 
 # Run a dummy training iteration
-loss = train_discriminator( discriminator, data_loader_source, data_loader_target, optimizer, epochs=5, criterion=criterion, device=device)
+train_discriminator(discriminator, data_loader_source, data_loader_target, optimizer, epochs=5, criterion=criterion,
+                    device=device)
