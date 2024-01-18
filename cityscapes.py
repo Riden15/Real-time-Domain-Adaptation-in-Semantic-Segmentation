@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 import pandas as pd
 from PIL import Image
 import pathlib
@@ -13,7 +13,7 @@ def pil_loader(path):
 
 
 class CityScapes(Dataset):
-    def __init__(self, mode):
+    def __init__(self, mode, transform=None):
         """
         Initializes a CityScapes dataset object.
 
@@ -27,10 +27,11 @@ class CityScapes(Dataset):
         if mode != "train" and mode != "val":
             return -1
         self.mode = mode
-        self.data_path = "Cityscapes/images/" + self.mode
-        self.label_path = "Cityscapes/gtFine/" + self.mode
+        self.data_path = "data/Cityscapes/images/" + self.mode
+        self.label_path = "data/Cityscapes/gtFine/" + self.mode
         self.data = list(pathlib.Path(self.data_path).glob("*/*.png"))
         self.label = list(pathlib.Path(self.label_path).glob("*/*.png"))
+        self.transform = transform
 
     def __getitem__(self, idx):
         """
@@ -51,7 +52,12 @@ class CityScapes(Dataset):
         gtLabelTrain = self.label_path + "/" + tmp[0] + "/" + tmp[0] + "_" + tmp[1] + "_" + tmp[
             2] + "_gtFine_labelTrainIds.png"
         gtLabelTrain_Path = pathlib.Path(gtLabelTrain)
-        return pil_loader(element), pil_loader(gtColor_Path), pil_loader(gtLabelTrain_Path)
+
+        if self.transform:
+            return self.transform(pil_loader(element)), self.transform(pil_loader(gtColor_Path)), self.transform(
+                pil_loader(gtLabelTrain_Path))
+        else:
+            return pil_loader(element), pil_loader(gtColor_Path), pil_loader(gtLabelTrain_Path)
 
     def __len__(self):
         """

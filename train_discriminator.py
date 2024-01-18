@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from model.discriminator import Discriminator
 
 # Define the loss criterion
-criterion = nn.BCEWithLogitsLoss()
+criterion = nn.BCEWithLogitsLoss() # Why not SDG?
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 print(f"Using device: {device}")
 

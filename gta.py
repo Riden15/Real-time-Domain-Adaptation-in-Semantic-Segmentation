@@ -23,13 +23,14 @@ class Gta(Dataset):
         label (list): List of label file paths.
     """
 
-    def __init__(self):
+    def __init__(self, transform=None):
         super(Gta, self).__init__()
         self.data_path = "data/GTA5/images"
         self.label_path = "data/GTA5/labels"
         self.data = list(pathlib.Path(self.data_path).glob("*.png"))  # glob takes all the things
         # that satisfies the regex, in thi case *.png (all the images are in .png)
         self.label = list(pathlib.Path(self.label_path).glob("*.png"))
+        self.transform = transform
 
     def __getitem__(self, idx):
         """
@@ -46,7 +47,10 @@ class Gta(Dataset):
         label = self.label_path + "/" + tmp
         label_path = pathlib.Path(label)
 
-        return pil_loader(element), pil_loader(label_path)
+        if self.transform:
+            return self.transform(pil_loader(element)), self.transform(pil_loader(label_path))
+        else:
+            return pil_loader(element), pil_loader(label_path)
 
     def __len__(self):
         """

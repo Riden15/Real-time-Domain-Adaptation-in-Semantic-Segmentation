@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
-from torchsummary import summary
+from torchinfo import summary
+from torchvision.transforms import transforms
+
 from model.model_stages import BiSeNet
 from cityscapes import CityScapes
 import torch
@@ -217,7 +219,15 @@ def main():
 
     mode = args.mode
 
-    train_dataset = CityScapes(mode)
+    train_transforms = transforms.Compose([
+        # transforms.RandomHorizontalFlip(p=0.5), here we will add data augmentation
+        transforms.ToTensor(),
+        # normalize the image with mean and std of ImageNet
+        transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                             std=[0.229, 0.224, 0.225])
+    ])
+
+    train_dataset = CityScapes(mode, transform=train_transforms)
     dataloader_train = DataLoader(train_dataset,
                                   batch_size=args.batch_size,
                                   shuffle=False,
@@ -225,7 +235,7 @@ def main():
                                   pin_memory=False,
                                   drop_last=True)
 
-    val_dataset = CityScapes(mode='val')
+    val_dataset = CityScapes(mode='val', transform=train_transforms)
     dataloader_val = DataLoader(val_dataset,
                                 batch_size=1,
                                 shuffle=False,
@@ -253,12 +263,13 @@ def main():
 
     ## train loop
     train(args, model, optimizer, dataloader_train, dataloader_val)
+
     # final test
     val(args, model, dataloader_val)
 
+    summary(model, input_size=(2, 3, 224, 224), col_names=["input_size", "output_size", "num_params", "trainable"],
+    col_width=20, row_settings=["var_names"])
+
 
 if __name__ == "__main__":
-    # main()
-    model = BiSeNet(backbone='CatNetSmall', n_classes=19, pretrain_model='')
-    model.to('cuda')
-    summary(model, input_size=(3, 224, 224))
+    main()
