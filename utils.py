@@ -28,17 +28,56 @@ def poly_lr_scheduler(optimizer, init_lr, iter, lr_decay_iter=1,
 	# return lr
 
 def get_label_info(csv_path):
-	# return label -> {label_name: [r_value, g_value, b_value, ...}
-	ann = pd.read_csv(csv_path)
+	# return label -> {label_name: [r_value, g_value, b_value, image_class, cs_id]}
+	ann = pd.read_csv(csv_path, delimiter=";")
 	label = {}
 	for iter, row in ann.iterrows():
 		label_name = row['name']
 		r = row['r']
 		g = row['g']
 		b = row['b']
-		class_11 = row['class_11']
-		label[label_name] = [int(r), int(g), int(b), class_11]
+		image_class= row['class']
+		cs_id = row['csId']
+		label[label_name] = [int(r), int(g), int(b), image_class, cs_id]
 	return label
+
+def colored_image_to_segmentation(label, label_info):
+    # label -> numpy[H, W, 3]
+    # return semantic_map -> torch.tensor([class_num, H, W], dtype=torch.int64)
+    semantic_map = np.full(label.shape[:-1], len(label_info))
+
+    for index, info in enumerate(label_info):
+        color = label_info[info][:3]
+        equality = np.equal(label, color)
+        
+        class_map = np.all(equality, axis=-1)
+        semantic_map[class_map] = index
+        
+    semantic_map = one_hot_to_segmentation(semantic_map)
+    
+    return semantic_map
+
+def one_hot_to_segmentation(semantic_map, num_classes=20):
+    # semantic_map -> numpy[H, W]
+    # num_classes -> 19 + void = 20
+    # return semantic_map -> torch.tensor([class_num, H, W], dtype=torch.int64)
+    semantic_map = torch.tensor(semantic_map, dtype=torch.int64)
+    semantic_map = torch.nn.functional.one_hot(semantic_map, num_classes=num_classes)
+    #remove void class from [H, W, 20] to [H, W, 19]
+    semantic_map = semantic_map[:, :, :-1]
+    semantic_map = semantic_map.permute(2, 0, 1)
+    
+    return semantic_map
+
+def cs_id_to_class(label, label_info):
+    # label -> numpy[H, W]
+    # return semantic_map -> [H, W]
+    semantic_map = np.full(label.shape, len(label_info))
+    for index, info in enumerate(label_info):
+        cs_id = label_info[info][4]
+        semantic_map[label == cs_id] = index
+    return semantic_map	
+ 
 
 def one_hot_it(label, label_info):
 	# return semantic_map -> [H, W]
