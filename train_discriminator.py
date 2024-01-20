@@ -41,8 +41,7 @@ def train_discriminator(discriminator, data_loader_source, data_loader_target, o
         # Iterate over both source and target domain data loaders
         for source_data, target_data in zip(data_loader_source, data_loader_target):
             # Handle data from the source domain
-            _, seg_source = source_data  # Unpack source domain data (images, labels), labels are ignored
-            # R: seg_source are the labels
+            _, seg_source = source_data  # Unpack source domain data (images, labels)
             seg_source = seg_source.to(device)  # Move source images to the device
             labels_source = torch.ones(seg_source.size(0), 1, seg_source.size(2), seg_source.size(3)).to(
                 device)  # Labels are 1 for source domain data

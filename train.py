@@ -12,7 +12,7 @@ import argparse
 import numpy as np
 from tensorboardX import SummaryWriter
 import torch.cuda.amp as amp
-from utils import poly_lr_scheduler
+from utils import poly_lr_scheduler, get_label_info, one_hot_it
 from utils import reverse_one_hot, compute_global_accuracy, fast_hist, per_class_iu
 from tqdm import tqdm
 
@@ -265,14 +265,38 @@ def main():
         return None
 
     ## train loop
-    #train(args, model, optimizer, dataloader_train, dataloader_val)
+    train(args, model, optimizer, dataloader_train, dataloader_val)
 
     # final test
-    # val(args, model, dataloader_val)
+    val(args, model, dataloader_val)
 
     summary(model, input_size=(2, 3, 224, 224), col_names=["input_size", "output_size", "num_params", "trainable"],
-    col_width=20, row_settings=["var_names"])
+            col_width=20, row_settings=["var_names"])
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+
+    train_transforms = transforms.Compose([
+        # transforms.RandomHorizontalFlip(p=0.5), here we will add data augmentation
+        transforms.ToTensor(),
+        # normalize the image with mean and std of ImageNet
+        transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                             std=[0.229, 0.224, 0.225])
+    ])
+
+    train_dataset = CityScapes('train', transform=train_transforms)
+    dataloader_train = DataLoader(train_dataset,
+                                  batch_size=2,
+                                  shuffle=False,
+                                  num_workers=4,
+                                  pin_memory=False,
+                                  drop_last=True)
+
+    a, b = next(iter(dataloader_train))
+
+    label = get_label_info('class-label.csv')
+
+    prova = one_hot_it(np.array([102, 102, 156]), label)
+
+    print(prova)

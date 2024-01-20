@@ -54,8 +54,7 @@ class CityScapes(Dataset):
         gtLabelTrain_Path = pathlib.Path(gtLabelTrain)
 
         if self.transform:
-            return self.transform(pil_loader(element)), self.transform(pil_loader(gtColor_Path))
-            # , self.transform(pil_loader(gtLabelTrain_Path))
+            return self.transform(pil_loader(element)), self.transform(pil_loader(gtColor_Path)) # , self.transform(pil_loader(gtLabelTrain_Path))
         else:
             return pil_loader(element), pil_loader(gtColor_Path), pil_loader(gtLabelTrain_Path)
 
