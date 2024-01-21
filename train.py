@@ -2,7 +2,6 @@
 # -*- encoding: utf-8 -*-
 from torchinfo import summary
 from torchvision.transforms import transforms
-
 from model.model_stages import BiSeNet
 from datasets.cityscapes import CityScapes
 import torch
@@ -60,7 +59,7 @@ def val(args, model, dataloader):
 
 
 def train(args, model, optimizer, dataloader_train, dataloader_val):
-    writer = SummaryWriter(comment=''.format(args.optimizer))
+    writer = SummaryWriter(logdir=args.tensor_board_path, comment=''.format(args.optimizer))
 
     scaler = amp.GradScaler()
 
@@ -78,7 +77,6 @@ def train(args, model, optimizer, dataloader_train, dataloader_val):
         for i, (data, label) in enumerate(dataloader_train):
             data = data.cuda()
             label = label.long().cuda()
-            print(label.shape)
             optimizer.zero_grad()
 
             with amp.autocast():
@@ -135,7 +133,6 @@ def parse_args():
                        type=str,
                        default='train',
                        )
-
     parse.add_argument('--backbone',
                        dest='backbone',
                        type=str,
@@ -203,6 +200,10 @@ def parse_args():
                        type=str,
                        default=None,
                        help='path to save model')
+    parse.add_argument('--tensor_board_path',
+                       type=str,
+                       default='runs',
+                       help='path to save graph for TensorBoard')
     parse.add_argument('--optimizer',
                        type=str,
                        default='adam',
@@ -226,23 +227,28 @@ def main():
     train_transforms = transforms.Compose([
         # transforms.RandomHorizontalFlip(p=0.5), here we will add datasets augmentation
         transforms.ToTensor(),
+        transforms.Resize((args.crop_height, args.crop_width), antialias=True),
         # normalize the image with mean and std of ImageNet
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
     ])
 
-    train_dataset = CityScapes(mode, train_transform=train_transforms)
+    label_transforms = transforms.Compose([
+        transforms.Resize((args.crop_height, args.crop_width), antialias=True),
+    ])
+
+    train_dataset = CityScapes(mode, train_transform=train_transforms, label_transform=label_transforms)
     dataloader_train = DataLoader(train_dataset,
                                   batch_size=args.batch_size,
-                                  shuffle=False,
+                                  shuffle=True,
                                   num_workers=args.num_workers,
                                   pin_memory=False,
                                   drop_last=True)
 
-    val_dataset = CityScapes(mode='val', train_transform=train_transforms)
+    val_dataset = CityScapes(mode='val', train_transform=train_transforms, label_transform=label_transforms)
     dataloader_val = DataLoader(val_dataset,
                                 batch_size=1,
-                                shuffle=False,
+                                shuffle=True,
                                 num_workers=args.num_workers,
                                 drop_last=False)
 
@@ -271,10 +277,9 @@ def main():
     # final test
     val(args, model, dataloader_val)
 
-    summary(model, input_size=(2, 3, 224, 224), col_names=["input_size", "output_size", "num_params", "trainable"],
-            col_width=20, row_settings=["var_names"])
+    # summary(model, input_size=(2, 3, 224, 224), col_names=["input_size", "output_size", "num_params", "trainable"],
+    #         col_width=20, row_settings=["var_names"])
 
 
 if __name__ == "__main__":
     main()
-    # print(torch.__version__)

@@ -29,6 +29,7 @@ class CityScapes(Dataset):
         label (list): A list of Path objects representing the label files.
         csv_path (str): The path to the CSV file containing label information.
         train_transform (callable): Optional transform to be applied to the image data during training.
+        label_transform (callable): Optional transform to be applied to the label data during training.
 
     Methods:
         __getitem__(self, idx): Retrieve the image and label at the given index.
@@ -36,7 +37,7 @@ class CityScapes(Dataset):
     """
 
     def __init__(self, mode, data_path="datasets/Cityscapes/images/", label_path="datasets/Cityscapes/gtFine/",
-                 csv_path="datasets/class-label.csv", train_transform=None):
+                 csv_path="datasets/class-label.csv", train_transform=None, label_transform=None):
         super(CityScapes, self).__init__()
         if mode != "train" and mode != "val":
             return -1
@@ -47,6 +48,7 @@ class CityScapes(Dataset):
         self.label = list(Path(self.label_path).glob("*/*.png"))
         self.csv_path = csv_path
         self.train_transform = train_transform
+        self.label_transform = label_transform
 
     def __getitem__(self, idx):
         element = self.data[idx]
@@ -59,15 +61,26 @@ class CityScapes(Dataset):
             2] + "_gtFine_labelTrainIds.png"
         gtLabelTrain_Path = Path(gtLabelTrain)
 
-        # obtaining semantic segmentation labels from image
         label_info = get_label_info(self.csv_path)
-        # label = self.transform(pil_loader(gtColor_Path))
-        label = np.array(pil_loader(gtColor_Path))
-        label = colored_image_to_segmentation(label, label_info)
 
-        if self.train_transform:
+        if self.train_transform and self.label_transform:
+            label = np.array(self.label_transform(pil_loader(gtColor_Path)))
+            label = colored_image_to_segmentation(label, label_info)
             return self.train_transform(pil_loader(element)), label
+
+        elif self.train_transform and not self.label_transform:
+            label = np.array(pil_loader(gtColor_Path))
+            label = colored_image_to_segmentation(label, label_info)
+            return self.train_transform(pil_loader(element)), label
+
+        elif not self.train_transform and self.label_transform:
+            label = np.array(self.label_transform(pil_loader(gtColor_Path)))
+            label = colored_image_to_segmentation(label, label_info)
+            return pil_loader(element), label
+
         else:
+            label = np.array(pil_loader(gtColor_Path))
+            label = colored_image_to_segmentation(label, label_info)
             return pil_loader(element), label
 
     def __len__(self):

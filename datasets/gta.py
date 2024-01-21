@@ -33,7 +33,7 @@ class Gta(Dataset):
 
     def __init__(self, data_path="datasets/GTA5/images", label_path="datasets/GTA5/labels",
                  csv_path="datasets/class-label.csv",
-                 train_transform=None):
+                 train_transform=None, label_transform=None):
 
         super(Gta, self).__init__()
         self.data_path = data_path
@@ -42,6 +42,7 @@ class Gta(Dataset):
         self.label = list(Path(self.label_path).glob("*.png"))
         self.csv_path = csv_path
         self.train_transform = train_transform
+        self.label_transform = label_transform
 
     def __getitem__(self, idx):
         element = self.data[idx]
@@ -49,15 +50,26 @@ class Gta(Dataset):
         label = self.label_path + "/" + tmp
         label_path = Path(label)
 
-        # obtaining semantic segmentation labels from image
         label_info = get_label_info(self.csv_path)
-        # label = self.transform(pil_loader(label_path))
-        label = np.array(pil_loader(label_path))
-        label = colored_image_to_segmentation(label, label_info)
 
-        if self.train_transform:
+        if self.train_transform and self.label_transform:
+            label = np.array(self.label_transform(pil_loader(label_path)))
+            label = colored_image_to_segmentation(label, label_info)
             return self.train_transform(pil_loader(element)), label
+
+        elif self.train_transform and not self.label_transform:
+            label = np.array(pil_loader(label_path))
+            label = colored_image_to_segmentation(label, label_info)
+            return self.train_transform(pil_loader(element)), label
+
+        elif not self.train_transform and self.label_transform:
+            label = np.array(self.label_transform(pil_loader(label_path)))
+            label = colored_image_to_segmentation(label, label_info)
+            return pil_loader(element), label
+
         else:
+            label = np.array(pil_loader(label_path))
+            label = colored_image_to_segmentation(label, label_info)
             return pil_loader(element), label
 
     def __len__(self):
