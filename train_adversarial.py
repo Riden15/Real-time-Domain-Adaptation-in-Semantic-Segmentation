@@ -38,14 +38,14 @@ def train(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dataloader_city
         loss_record = []  # List to record loss values
 
         for i, (data_gta5, data_cityscapes) in enumerate(zip(dataloader_gta5, dataloader_cityscapes)):
-            data_gta5 = data_gta5.cuda()  # Move GTA5 data to GPU
-            data_gta5, label_gta5 = data_gta5  # Unpack GTA5 data
-            data_cityscapes = data_cityscapes.cuda()  # Move Cityscapes data to GPU
-            data_cityscapes, _ = data_cityscapes  # Unpack Cityscapes data
+            data_gta5 = data_gta5.cuda()  # Move GTA5 datasets to GPU
+            data_gta5, label_gta5 = data_gta5  # Unpack GTA5 datasets
+            data_cityscapes = data_cityscapes.cuda()  # Move Cityscapes datasets to GPU
+            data_cityscapes, _ = data_cityscapes  # Unpack Cityscapes datasets
             optimizer_G.zero_grad()  # Zero the gradients
 
             G.train()  # Set the model to training mode
-            # Train the segmentation model with GTA5 data
+            # Train the segmentation model with GTA5 datasets
             with amp.autocast():
                 output_gta5, out16_gta5, out32_gta5 = G(data_gta5)  # Get predictions from the model at multiple scales
                 # Calculate loss at multiple scales
@@ -57,32 +57,32 @@ def train(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dataloader_city
             scaler.scale(loss_gta5).backward()  # Scale loss and perform backpropagation
             scaler.step(optimizer_G)  # Perform optimizer step
 
-            #  Get predictions from the segmentation model on Cityscapes data
+            #  Get predictions from the segmentation model on Cityscapes datasets
             G.eval()  # Set the model to evaluation mode
             with torch.no_grad():
                 output_cityscapes, out16_cityscapes, out32_cityscapes = G(data_cityscapes)
 
-            # Train the discriminator with GTA5 data
+            # Train the discriminator with GTA5 datasets
             D.train()  # Set the model to training mode
-            # Forward pass of GTA5 data through the discriminator
+            # Forward pass of GTA5 datasets through the discriminator
             outputs_gta5 = D(output_gta5.detach())
             out16_gta5 = D(out16_gta5.detach())
             out32_gta5 = D(out32_gta5.detach())
-            # Calculate loss for GTA5 data
+            # Calculate loss for GTA5 datasets
             labels_gta5 = torch.ones(outputs_gta5.size(0), 1, outputs_gta5.size(2),
-                                     outputs_gta5.size(3)).cuda()  # Labels are 1 for GTA5 data
+                                     outputs_gta5.size(3)).cuda()  # Labels are 1 for GTA5 datasets
             loss_d_gta5 = loss_func_d(outputs_gta5, labels_gta5)
             loss_d_gta5 += loss_func_d(out16_gta5, labels_gta5)
             loss_d_gta5 += loss_func_d(out32_gta5, labels_gta5)
 
-            # Train the discriminator with Cityscapes data
-            # Forward pass of Cityscapes data through the discriminator
+            # Train the discriminator with Cityscapes datasets
+            # Forward pass of Cityscapes datasets through the discriminator
             outputs_cityscapes = D(output_cityscapes.detach())
             out16_cityscapes = D(out16_cityscapes.detach())
             out32_cityscapes = D(out32_cityscapes.detach())
-            # Calculate loss for Cityscapes data
+            # Calculate loss for Cityscapes datasets
             labels_cityscapes = torch.zeros(outputs_cityscapes.size(0), 1, outputs_cityscapes.size(2),
-                                            outputs_cityscapes.size(3)).cuda()  # Labels are 0 for Cityscapes data
+                                            outputs_cityscapes.size(3)).cuda()  # Labels are 0 for Cityscapes datasets
             loss_d_cityscapes = loss_func_d(outputs_cityscapes, labels_cityscapes)
             loss_d_cityscapes += loss_func_d(out16_cityscapes, labels_cityscapes)
             loss_d_cityscapes += loss_func_d(out32_cityscapes, labels_cityscapes)

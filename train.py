@@ -4,7 +4,7 @@ from torchinfo import summary
 from torchvision.transforms import transforms
 
 from model.model_stages import BiSeNet
-from cityscapes import CityScapes
+from datasets.cityscapes import CityScapes
 import torch
 from torch.utils.data import DataLoader
 import logging
@@ -12,7 +12,7 @@ import argparse
 import numpy as np
 from tensorboardX import SummaryWriter
 import torch.cuda.amp as amp
-from utils import poly_lr_scheduler, get_label_info, one_hot_it
+from utils import poly_lr_scheduler
 from utils import reverse_one_hot, compute_global_accuracy, fast_hist, per_class_iu
 from tqdm import tqdm
 
@@ -64,6 +64,8 @@ def train(args, model, optimizer, dataloader_train, dataloader_val):
 
     scaler = amp.GradScaler()
 
+    # se ho capito bene, il 255 è il valore che rappresenta la classe void e che quindi
+    # non deve essere considerato nella loss function.
     loss_func = torch.nn.CrossEntropyLoss(ignore_index=255)
     max_miou = 0
     step = 0
@@ -76,12 +78,11 @@ def train(args, model, optimizer, dataloader_train, dataloader_val):
         for i, (data, label) in enumerate(dataloader_train):
             data = data.cuda()
             label = label.long().cuda()
+            print(label.shape)
             optimizer.zero_grad()
 
             with amp.autocast():
                 output, out16, out32 = model(data)
-                print(label.shape)
-                print(output.shape)
                 loss1 = loss_func(output, label.squeeze(1))
                 loss2 = loss_func(out16, label.squeeze(1))
                 loss3 = loss_func(out32, label.squeeze(1))
@@ -223,14 +224,14 @@ def main():
     mode = args.mode
 
     train_transforms = transforms.Compose([
-        # transforms.RandomHorizontalFlip(p=0.5), here we will add data augmentation
+        # transforms.RandomHorizontalFlip(p=0.5), here we will add datasets augmentation
         transforms.ToTensor(),
         # normalize the image with mean and std of ImageNet
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
     ])
 
-    train_dataset = CityScapes(mode, transform=train_transforms)
+    train_dataset = CityScapes(mode, train_transform=train_transforms)
     dataloader_train = DataLoader(train_dataset,
                                   batch_size=args.batch_size,
                                   shuffle=False,
@@ -238,7 +239,7 @@ def main():
                                   pin_memory=False,
                                   drop_last=True)
 
-    val_dataset = CityScapes(mode='val', transform=train_transforms)
+    val_dataset = CityScapes(mode='val', train_transform=train_transforms)
     dataloader_val = DataLoader(val_dataset,
                                 batch_size=1,
                                 shuffle=False,
@@ -275,28 +276,5 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
-
-    train_transforms = transforms.Compose([
-        # transforms.RandomHorizontalFlip(p=0.5), here we will add data augmentation
-        transforms.ToTensor(),
-        # normalize the image with mean and std of ImageNet
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225])
-    ])
-
-    train_dataset = CityScapes('train', transform=train_transforms)
-    dataloader_train = DataLoader(train_dataset,
-                                  batch_size=2,
-                                  shuffle=False,
-                                  num_workers=4,
-                                  pin_memory=False,
-                                  drop_last=True)
-
-    a, b = next(iter(dataloader_train))
-
-    label = get_label_info('class-label.csv')
-
-    prova = one_hot_it(np.array([102, 102, 156]), label)
-
-    print(prova)
+    main()
+    # print(torch.__version__)

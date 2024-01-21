@@ -152,13 +152,11 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-#Added by Nik
-data
+# JetBrains IDEs
 .idea
+
+GTA5/
+Cityscapes/
 STDCNET_weights
 
 *.ipynb
-
-GTA5/
-
-Cityscapes/
