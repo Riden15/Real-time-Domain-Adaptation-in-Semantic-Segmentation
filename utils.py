@@ -65,6 +65,7 @@ def colored_image_to_segmentation(label, label_info):
         torch.Tensor: The segmentation map with shape [class_num, H, W] and dtype torch.int64.
     """
 
+    # fillo con 255 perchè è il valore che rappresenta il void e che è ignorato per la loss
     semantic_map = np.full(label.shape[:-1], 255)
 
     for index, info in enumerate(label_info):
