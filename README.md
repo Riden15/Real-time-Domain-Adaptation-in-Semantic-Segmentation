@@ -5,5 +5,7 @@ the Machine Learning Course.
 
 ## Command Line Arguments
 
-- 2.A: ``--pretrain_path STDCNET_weights/STDCNet813M_73.91.tar --batch_size 8 --num_epochs 50 --crop_height 512
+- 2.A: ``--train_dataset Cityscapes --pretrain_path STDCNET_weights/STDCNet813M_73.91.tar --batch_size 8 --num_epochs 50 --crop_height 512
         --crop_width 1024 --tensor_board_path runs/2_A --save_model_path saved_models/2_A --optimizer adam --loss crossentropy``
+- 2.B: ``--train_dataset GTA --pretrain_path STDCNET_weights/STDCNet813M_73.91.tar --batch_size 8 --num_epochs 50 --crop_height 512
+        --crop_width 1024 --tensor_board_path runs/2_B --save_model_path saved_models/2_B --optimizer adam --loss crossentropy``

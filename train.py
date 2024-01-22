@@ -2,6 +2,8 @@
 # -*- encoding: utf-8 -*-
 from torchinfo import summary
 from torchvision.transforms import transforms
+
+from datasets.gta import Gta
 from model.model_stages import BiSeNet
 from datasets.cityscapes import CityScapes
 import torch
@@ -138,6 +140,11 @@ def parse_args():
                        type=str,
                        default='CatmodelSmall',
                        )
+    parse.add_argument('--train_dataset',
+                       dest='train_dataset',
+                       type=str,
+                       default='Cityscapes',
+                       )
     parse.add_argument('--pretrain_path',
                        dest='pretrain_path',
                        type=str,
@@ -219,11 +226,10 @@ def parse_args():
 def main():
     args = parse_args()
 
-    ## dataset
     n_classes = args.num_classes
-
     mode = args.mode
 
+    # dataset transforms
     train_transforms = transforms.Compose([
         # transforms.RandomHorizontalFlip(p=0.5), here we will add datasets augmentation
         transforms.ToTensor(),
@@ -237,7 +243,15 @@ def main():
         transforms.Resize((args.crop_height, args.crop_width), antialias=True),
     ])
 
-    train_dataset = CityScapes(mode, train_transform=train_transforms, label_transform=label_transforms)
+    # dataset class
+    if args.train_dataset == 'Cityscapes':
+        train_dataset = CityScapes(mode, train_transform=train_transforms, label_transform=label_transforms)
+        val_dataset = CityScapes(mode='val', train_transform=train_transforms, label_transform=label_transforms)
+    else:
+        train_dataset = Gta(train_transform=train_transforms, label_transform=label_transforms)
+        val_dataset = Gta(train_transform=train_transforms, label_transform=label_transforms)
+
+    # dataloader class
     dataloader_train = DataLoader(train_dataset,
                                   batch_size=args.batch_size,
                                   shuffle=True,
@@ -245,14 +259,13 @@ def main():
                                   pin_memory=False,
                                   drop_last=True)
 
-    val_dataset = CityScapes(mode='val', train_transform=train_transforms, label_transform=label_transforms)
     dataloader_val = DataLoader(val_dataset,
                                 batch_size=1,
                                 shuffle=True,
                                 num_workers=args.num_workers,
                                 drop_last=False)
 
-    ## model
+    # model
     model = BiSeNet(backbone=args.backbone, n_classes=n_classes, pretrain_model=args.pretrain_path,
                     use_conv_last=args.use_conv_last)
 
@@ -271,7 +284,7 @@ def main():
         print('not supported optimizer \n')
         return None
 
-    ## train loop
+    # train loop
     train(args, model, optimizer, dataloader_train, dataloader_val)
 
     # final test
