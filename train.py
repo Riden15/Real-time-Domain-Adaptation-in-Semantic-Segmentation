@@ -2,7 +2,7 @@
 # -*- encoding: utf-8 -*-
 from torchinfo import summary
 from torchvision.transforms import transforms
-
+from timeit import default_timer as timer
 from datasets.gta import Gta
 from model.model_stages import BiSeNet
 from datasets.cityscapes import CityScapes
@@ -70,7 +70,10 @@ def train(args, model, optimizer, dataloader_train, dataloader_val):
     loss_func = torch.nn.CrossEntropyLoss(ignore_index=255)
     max_miou = 0
     step = 0
+    train_times = []
+
     for epoch in range(args.num_epochs):
+        train_time_start = timer()
         lr = poly_lr_scheduler(optimizer, args.learning_rate, iter=epoch, max_iter=args.num_epochs)
         model.train()
         tq = tqdm(total=len(dataloader_train) * args.batch_size)
@@ -116,6 +119,10 @@ def train(args, model, optimizer, dataloader_train, dataloader_val):
                 torch.save(model.module.state_dict(), os.path.join(args.save_model_path, 'best.pth'))
             writer.add_scalar('epoch/precision_val', precision, epoch)
             writer.add_scalar('epoch/miou val', miou, epoch)
+        train_time_end = timer()
+        train_times.append(train_time_end - train_time_start)
+
+    print(f'Average train time per epoch in minutes: {np.mean(train_times) / 60}')
 
 
 def str2bool(v):
