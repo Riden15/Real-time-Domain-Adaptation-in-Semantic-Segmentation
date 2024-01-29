@@ -84,6 +84,8 @@ def train(args, model, optimizer, dataloader_train, dataloader_val):
             label = label.long().cuda()
             optimizer.zero_grad()
 
+
+
             with amp.autocast():
                 output, out16, out32 = model(data)
                 loss1 = loss_func(output, label.squeeze(1))
@@ -230,32 +232,46 @@ def parse_args():
     return parse.parse_args()
 
 
+
 def main():
     args = parse_args()
 
     n_classes = args.num_classes
     mode = args.mode
 
-    # dataset transforms
     train_transforms = transforms.Compose([
-        # transforms.RandomHorizontalFlip(p=0.5), here we will add datasets augmentation
-        transforms.ToTensor(),
-        transforms.Resize((args.crop_height, args.crop_width), antialias=True),
+        transforms.Resize((args.crop_height, args.crop_width), antialias=False),
         # normalize the image with mean and std of ImageNet
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225])
+                             std=[0.229, 0.224, 0.225]),
+        transforms.ToTensor()
     ])
-
+    
     label_transforms = transforms.Compose([
-        transforms.Resize((args.crop_height, args.crop_width), antialias=True),
+        transforms.Resize((args.crop_height, args.crop_width), interpolation=transforms.InterpolationMode.NEAREST)
     ])
 
     # dataset class
     if args.train_dataset == 'Cityscapes':
+
         train_dataset = CityScapes(mode, train_transform=train_transforms, label_transform=label_transforms)
         val_dataset = CityScapes(mode='val', train_transform=train_transforms, label_transform=label_transforms)
-    else:
+
+    elif args.train_dataset == 'GTA':
+
         train_dataset = Gta(train_transform=train_transforms, label_transform=label_transforms)
+        val_dataset = Gta(train_transform=train_transforms, label_transform=label_transforms)
+
+    elif args.train_dataset == 'GTA_aug':
+
+        train_data_aug = transforms.Compose([
+            transforms.RandomHorizontalFlip(p=1),
+            transforms.ColorJitter(brightness=.5, contrast=.5, saturation=.5, hue=0.1),
+            transforms.RandomResizedCrop((args.crop_height, args.crop_width), scale=(0.125, 1.5)),
+        ])
+
+        train_dataset = Gta(train_transform=train_transforms, label_transform=label_transforms,
+                            data_aug_transform=train_data_aug)
         val_dataset = Gta(train_transform=train_transforms, label_transform=label_transforms)
 
     # dataloader class
@@ -284,7 +300,7 @@ def main():
     if args.optimizer == 'rmsprop':
         optimizer = torch.optim.RMSprop(model.parameters(), args.learning_rate)
     elif args.optimizer == 'sgd':
-        optimizer = torch.optim.SGD(model.parameters(), args.learning_rate, momentum=0.9, weight_decay=1e-4)
+        optimizer = torch.optim.SGD(model.parameters(), args.learning_rate, momentum=0.9, weight_decay=5e-4)
     elif args.optimizer == 'adam':
         optimizer = torch.optim.Adam(model.parameters(), args.learning_rate)
     else:  # rmsprop
@@ -296,9 +312,6 @@ def main():
 
     # final test
     val(args, model, dataloader_val)
-
-    # summary(model, input_size=(2, 3, 224, 224), col_names=["input_size", "output_size", "num_params", "trainable"],
-    #         col_width=20, row_settings=["var_names"])
 
 
 if __name__ == "__main__":

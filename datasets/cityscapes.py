@@ -1,40 +1,16 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
-import os
-
 from torch.utils.data import Dataset
+from torchvision.transforms.functional import pil_to_tensor
 from PIL import Image
 from pathlib import Path
-from torchvision.transforms import transforms
-from utils import colored_image_to_segmentation, get_label_info
 import numpy as np
+import torch
+
+from utils import colored_image_to_segmentation, get_label_info
 
 
 class CityScapes(Dataset):
-    """
-    Dataset class for CityScapes dataset.
-
-    Args:
-        mode (str): The mode of the dataset, either "train" or "val".
-        data_path (str): The path to the directory containing the image data.
-        label_path (str): The path to the directory containing the label data.
-        csv_path (str): The path to the CSV file containing label information.
-        train_transform (callable): Optional transform to be applied to the image data during training.
-
-    Attributes:
-        mode (str): The mode of the dataset, either "train" or "val".
-        data_path (str): The path to the directory containing the image data.
-        label_path (str): The path to the directory containing the label data.
-        data (list): A list of Path objects representing the image files.
-        label (list): A list of Path objects representing the label files.
-        csv_path (str): The path to the CSV file containing label information.
-        train_transform (callable): Optional transform to be applied to the image data during training.
-        label_transform (callable): Optional transform to be applied to the label data during training.
-
-    Methods:
-        __getitem__(self, idx): Retrieve the image and label at the given index.
-        __len__(self): Returns the total number of images in the dataset.
-    """
 
     def __init__(self, mode, data_path="datasets/Cityscapes/images/", label_path="datasets/Cityscapes/gtFine/",
                  csv_path="datasets/class-label.csv", train_transform=None, label_transform=None):
@@ -64,30 +40,52 @@ class CityScapes(Dataset):
         label_info = get_label_info(self.csv_path)
 
         if self.train_transform and self.label_transform:
-            label = np.array(self.label_transform(pil_loader(gtColor_Path)))
-            label = colored_image_to_segmentation(label, label_info)
-            return self.train_transform(pil_loader(element)), label
+            img = self.train_transform(pil_loader_RGB(element))
+            label = self.label_transform(pil_loader_label(gtLabelTrain_Path))
+            return img, np.array(label)
+
+            # label_ = np.array(self.label_transform(pil_loader_RGB(gtColor_Path)))
+            # label_ = colored_image_to_segmentation(label_, label_info)
+            # return self.train_transform(pil_loader_RGB(element)), label
 
         elif self.train_transform and not self.label_transform:
-            label = np.array(pil_loader(gtColor_Path))
+            # img = self.train_transform(pil_loader_RGB(element))
+            # label = pil_loader_label(gtLabelTrain_Path)
+            # return img, np.array(label)
+
+            label = np.array(pil_loader_RGB(gtColor_Path))
             label = colored_image_to_segmentation(label, label_info)
-            return self.train_transform(pil_loader(element)), label
+            return self.train_transform(pil_loader_RGB(element)), label
 
         elif not self.train_transform and self.label_transform:
-            label = np.array(self.label_transform(pil_loader(gtColor_Path)))
+            # img = pil_loader_RGB(element)
+            # label = self.label_transform(pil_loader_label(gtLabelTrain_Path))
+            # return img, np.array(label)
+
+            label = np.array(self.label_transform(pil_loader_RGB(gtColor_Path)))
             label = colored_image_to_segmentation(label, label_info)
-            return pil_loader(element), label
+            return pil_loader_RGB(element), label
 
         else:
-            label = np.array(pil_loader(gtColor_Path))
+            # img = pil_loader_RGB(element)
+            # label = pil_loader_label(gtLabelTrain_Path)
+            # return img, np.array(label)
+
+            label = np.array(pil_loader_RGB(gtColor_Path))
             label = colored_image_to_segmentation(label, label_info)
-            return pil_loader(element), label
+            return pil_loader_RGB(element), label
 
     def __len__(self):
         return len(self.data)
 
 
-def pil_loader(path):
+def pil_loader_label(path):
+    with open(path, 'rb') as f:
+        img = Image.open(f)
+        return img.convert('L')
+
+
+def pil_loader_RGB(path):
     with open(path, 'rb') as f:
         img = Image.open(f)
         return img.convert('RGB')
