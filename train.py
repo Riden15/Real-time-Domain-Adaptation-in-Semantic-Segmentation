@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
 from torchinfo import summary
-from torchvision.transforms import transforms
+from torchvision.transforms import v2
 from timeit import default_timer as timer
 from datasets.gta import Gta
 from model.model_stages import BiSeNet
@@ -83,8 +83,6 @@ def train(args, model, optimizer, dataloader_train, dataloader_val):
             data = data.cuda()
             label = label.long().cuda()
             optimizer.zero_grad()
-
-
 
             with amp.autocast():
                 output, out16, out32 = model(data)
@@ -232,47 +230,27 @@ def parse_args():
     return parse.parse_args()
 
 
-
 def main():
     args = parse_args()
 
     n_classes = args.num_classes
     mode = args.mode
 
-    train_transforms = transforms.Compose([
-        transforms.Resize((args.crop_height, args.crop_width), antialias=False),
-        # normalize the image with mean and std of ImageNet
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225]),
-        transforms.ToTensor()
-    ])
-    
-    label_transforms = transforms.Compose([
-        transforms.Resize((args.crop_height, args.crop_width), interpolation=transforms.InterpolationMode.NEAREST)
-    ])
-
     # dataset class
     if args.train_dataset == 'Cityscapes':
 
-        train_dataset = CityScapes(mode, train_transform=train_transforms, label_transform=label_transforms)
-        val_dataset = CityScapes(mode='val', train_transform=train_transforms, label_transform=label_transforms)
+        train_dataset = CityScapes(mode, transformations=True, args=args)
+        val_dataset = CityScapes(mode='val', transformations=True, args=args)
 
     elif args.train_dataset == 'GTA':
 
-        train_dataset = Gta(train_transform=train_transforms, label_transform=label_transforms)
-        val_dataset = Gta(train_transform=train_transforms, label_transform=label_transforms)
+        train_dataset = Gta(transformations=True, args=args)
+        val_dataset = Gta(transformations=True, args=args)
 
     elif args.train_dataset == 'GTA_aug':
 
-        train_data_aug = transforms.Compose([
-            transforms.RandomHorizontalFlip(p=1),
-            transforms.ColorJitter(brightness=.5, contrast=.5, saturation=.5, hue=0.1),
-            transforms.RandomResizedCrop((args.crop_height, args.crop_width), scale=(0.125, 1.5)),
-        ])
-
-        train_dataset = Gta(train_transform=train_transforms, label_transform=label_transforms,
-                            data_aug_transform=train_data_aug)
-        val_dataset = Gta(train_transform=train_transforms, label_transform=label_transforms)
+        train_dataset = Gta(transformations=True, data_augmentation=True, args=args)
+        val_dataset = Gta(transformations=True, data_augmentation=True, args=args)
 
     # dataloader class
     dataloader_train = DataLoader(train_dataset,
