@@ -14,6 +14,34 @@ from utils import get_label_info, colored_image_to_segmentation
 
 
 class Gta(Dataset):
+    """
+    A class used to represent the GTA dataset
+
+    ...
+
+    Attributes
+    ----------
+    data_path : str
+        a string representing the path to the data
+    label_path : str
+        a string representing the path to the labels
+    csv_path : str
+        a string representing the path to the csv file containing class labels
+    transformations : bool
+        a boolean indicating whether transformations should be applied to the data
+    data_augmentation : bool
+        a boolean indicating whether data augmentation should be applied to the data
+    args : any
+        additional arguments
+
+    Methods
+    -------
+    __getitem__(idx)
+        Returns the image and label at the given index after applying necessary transformations and augmentations
+    __len__()
+        Returns the length of the data
+    """
+
     def __init__(self, data_path="datasets/GTA5/images", label_path="datasets/GTA5/labels",
                  csv_path="datasets/class-label.csv",
                  transformations=False, data_augmentation=False, args=None):
@@ -28,6 +56,22 @@ class Gta(Dataset):
         self.data_augmentation = data_augmentation
 
     def __getitem__(self, idx):
+        """
+        Returns the image and label at the given index after applying the necessary transformations and augmentations
+
+        Parameters
+        ----------
+            idx : int
+                Index of the data to be fetched
+
+        Returns
+        -------
+            image : Tensor
+                The transformed/augmented image
+            label : array
+                The corresponding label
+        """
+
         img_path = self.data[idx]
         label_path = Path(self.label_path + "/" + img_path.name)
 
@@ -49,10 +93,38 @@ class Gta(Dataset):
         return image, label
 
     def __len__(self):
+        """
+        Returns the length of the data
+
+        Returns
+        -------
+            int
+                Length of the data
+        """
         return len(self.data)
 
 
 def transform(image, label, args):
+    """
+    Applies transformations to the given image and label
+
+    Parameters
+    ----------
+        image : PIL Image
+            The image to be transformed
+        label : PIL Image
+            The label to be transformed
+        args : any
+            Additional arguments
+
+    Returns
+    -------
+        image : Tensor
+            The transformed image
+        label : array
+            The transformed label
+    """
+
     # transform to TV Tensor
     image = v2.ToImage()(image)
 
@@ -73,6 +145,26 @@ def transform(image, label, args):
 
 
 def augmentations(image, label, args):
+    """
+    Applies augmentations to the given image and label
+
+    Parameters
+    ----------
+        image : PIL Image
+            The image to be augmented
+        label : PIL Image
+            The label to be augmented
+        args : any
+            Additional arguments
+
+    Returns
+    -------
+        image : Tensor
+            The augmented image
+        label : array
+            The augmented label
+    """
+
     # color jitter (only train image)
     image = v2.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.1)(image)
 
@@ -94,6 +186,26 @@ def augmentations(image, label, args):
 
 
 def transform_with_aug(image, label, args):
+    """
+    Applies transformations and augmentations to the given image and label based on a random condition
+
+    Parameters
+    ----------
+        image : PIL Image
+            The image to be transformed/augmented
+        label : PIL Image
+            The label to be transformed/augmented
+        args : any
+            Additional arguments
+
+    Returns
+    -------
+        image : Tensor
+            The transformed/augmented image
+        label : array
+            The transformed/augmented label
+    """
+
     if random.random() > 0.5:
         image, label = transform(image, label, args)
         return image, label
@@ -103,6 +215,20 @@ def transform_with_aug(image, label, args):
 
 
 def pil_loader_RGB(path):
+    """
+    Loads an image from the given path and converts it to RGB
+
+    Parameters
+    ----------
+        path : Path
+            Path to the image
+
+    Returns
+    -------
+        img : PIL Image
+            The loaded image in RGB format
+    """
+
     with open(path, 'rb') as f:
         img = Image.open(f)
         return img.convert('RGB')
