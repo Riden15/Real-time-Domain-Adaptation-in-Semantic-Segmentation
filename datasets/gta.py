@@ -164,6 +164,8 @@ def augmentations(image, label, args):
         label : array
             The augmented label
     """
+    # Transform to tensor
+    image = v2.ToImage()(image)
 
     # color jitter (only train image)
     image = v2.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.1)(image)
@@ -174,12 +176,16 @@ def augmentations(image, label, args):
 
     # Random resize crop
     i, j, h, w = v2.RandomCrop.get_params(
-        image, output_size=(args.crop_height, args.crop_width), scale=(0.125, 1.5))
+        image, output_size=(args.crop_height, args.crop_width))
     image = TF.crop(image, i, j, h, w)
     label = TF.crop(label, i, j, h, w)
 
-    # Transform to tensor
-    image = v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale=True)])(image)
+    # scale to [0, 1]
+    image = v2.ToDtype(torch.float32, scale=True)(image)
+
+    # Normalize for ImageNet
+    image = v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])(image)
+
     label = np.array(label)
 
     return image, label

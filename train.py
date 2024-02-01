@@ -152,11 +152,20 @@ def parse_args():
                        type=str,
                        default='Cityscapes',
                        )
+    parse.add_argument('--val_dataset',
+                       dest='val_dataset',
+                       type=str,
+                       default='Cityscapes',
+                       )
     parse.add_argument('--pretrain_path',
                        dest='pretrain_path',
                        type=str,
                        default='',
                        )
+    parse.add_argument('--save_model_path',
+                       type=str,
+                       default=None,
+                       help='path to save model')
     parse.add_argument('--use_conv_last',
                        dest='use_conv_last',
                        type=str2bool,
@@ -210,10 +219,6 @@ def parse_args():
                        type=bool,
                        default=True,
                        help='whether to user gpu for training')
-    parse.add_argument('--save_model_path',
-                       type=str,
-                       default=None,
-                       help='path to save model')
     parse.add_argument('--tensor_board_path',
                        type=str,
                        default='runs',
@@ -236,60 +241,95 @@ def main():
     n_classes = args.num_classes
     mode = args.mode
 
-    # dataset class
-    if args.train_dataset == 'Cityscapes':
-
-        train_dataset = CityScapes(mode, transformations=True, args=args)
-        val_dataset = CityScapes(mode='val', transformations=True, args=args)
-
-    elif args.train_dataset == 'GTA':
-
-        train_dataset = Gta(transformations=True, args=args)
-        val_dataset = Gta(transformations=True, args=args)
-
-    elif args.train_dataset == 'GTA_aug':
-
-        train_dataset = Gta(transformations=True, data_augmentation=True, args=args)
-        val_dataset = Gta(transformations=True, data_augmentation=True, args=args)
-
-    # dataloader class
-    dataloader_train = DataLoader(train_dataset,
-                                  batch_size=args.batch_size,
-                                  shuffle=True,
-                                  num_workers=args.num_workers,
-                                  pin_memory=False,
-                                  drop_last=True)
-
-    dataloader_val = DataLoader(val_dataset,
-                                batch_size=1,
-                                shuffle=True,
-                                num_workers=args.num_workers,
-                                drop_last=False)
-
     # model
     model = BiSeNet(backbone=args.backbone, n_classes=n_classes, pretrain_model=args.pretrain_path,
                     use_conv_last=args.use_conv_last)
 
-    if torch.cuda.is_available() and args.use_gpu:
-        model = torch.nn.DataParallel(model).cuda()
+    if mode == 'train':
 
-    # optimizer
-    # build optimizer
-    if args.optimizer == 'rmsprop':
-        optimizer = torch.optim.RMSprop(model.parameters(), args.learning_rate)
-    elif args.optimizer == 'sgd':
-        optimizer = torch.optim.SGD(model.parameters(), args.learning_rate, momentum=0.9, weight_decay=5e-4)
-    elif args.optimizer == 'adam':
-        optimizer = torch.optim.Adam(model.parameters(), args.learning_rate)
-    else:  # rmsprop
-        print('not supported optimizer \n')
-        return None
+        # dataset class
+        if args.train_dataset == 'Cityscapes' and args.val_dataset == 'Cityscapes':
 
-    # train loop
-    train(args, model, optimizer, dataloader_train, dataloader_val)
+            train_dataset = CityScapes(mode, transformations=True, args=args)
+            val_dataset = CityScapes(mode='val', transformations=True, args=args)
 
-    # final test
-    val(args, model, dataloader_val)
+        elif args.train_dataset == 'GTA' and args.val_dataset == 'GTA':
+
+            train_dataset = Gta(transformations=True, args=args)
+            val_dataset = Gta(transformations=True, args=args)
+
+        elif args.train_dataset == 'GTA_aug' and args.val_dataset == 'GTA':
+
+            train_dataset = Gta(transformations=True, data_augmentation=True, args=args)
+            val_dataset = Gta(transformations=True, args=args)
+
+        elif args.train_dataset == 'Gta_aug' and args.val_dataset == 'Cityscapes':
+            train_dataset = Gta(transformations=True, data_augmentation=True, args=args)
+            val_dataset = CityScapes(mode='val', transformations=True, args=args)
+        else:
+            raise ValueError('Dataset not supported')
+
+        # dataloader class
+        dataloader_train = DataLoader(train_dataset,
+                                      batch_size=args.batch_size,
+                                      shuffle=True,
+                                      num_workers=args.num_workers,
+                                      pin_memory=False,
+                                      drop_last=True)
+
+        dataloader_val = DataLoader(val_dataset,
+                                    batch_size=1,
+                                    shuffle=True,
+                                    num_workers=args.num_workers,
+                                    drop_last=False)
+
+        # optimizer
+        if args.optimizer == 'rmsprop':
+            optimizer = torch.optim.RMSprop(model.parameters(), args.learning_rate)
+        elif args.optimizer == 'sgd':
+            optimizer = torch.optim.SGD(model.parameters(), args.learning_rate, momentum=0.9, weight_decay=5e-4)
+        elif args.optimizer == 'adam':
+            optimizer = torch.optim.Adam(model.parameters(), args.learning_rate)
+        else:  # rmsprop
+            print('not supported optimizer \n')
+            return None
+
+        # load model to gpu
+        if torch.cuda.is_available() and args.use_gpu:
+            model = torch.nn.DataParallel(model).cuda()
+
+        # train loop
+        train(args, model, optimizer, dataloader_train, dataloader_val)
+
+        # final test
+        val(args, model, dataloader_val)
+
+    elif mode == 'val':
+
+        if args.val_dataset == 'Cityscapes':
+            val_dataset = CityScapes(mode='val', transformations=True, args=args)
+        elif args.val_dataset == 'GTA':
+            val_dataset = Gta(transformations=True, args=args)
+        else:
+            raise ValueError('Dataset not supported')
+
+        dataloader_val = DataLoader(val_dataset,
+                                    batch_size=1,
+                                    shuffle=True,
+                                    num_workers=args.num_workers,
+                                    drop_last=False)
+        if args.save_model_path is not None:
+            # Load in the saved state_dict()
+            model.load_state_dict(torch.load(f=args.save_model_path))
+        else:
+            raise ValueError('save_model_path must be specified')
+
+        # load model to gpu
+        if torch.cuda.is_available() and args.use_gpu:
+            model = torch.nn.DataParallel(model).cuda()
+
+        # final test
+        val(args, model, dataloader_val)
 
 
 if __name__ == "__main__":
