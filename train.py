@@ -263,7 +263,7 @@ def main():
             train_dataset = Gta(transformations=True, data_augmentation=True, args=args)
             val_dataset = Gta(transformations=True, args=args)
 
-        elif args.train_dataset == 'Gta_aug' and args.val_dataset == 'Cityscapes':
+        elif args.train_dataset == 'GTA_aug' and args.val_dataset == 'Cityscapes':
             train_dataset = Gta(transformations=True, data_augmentation=True, args=args)
             val_dataset = CityScapes(mode='val', transformations=True, args=args)
         else:
@@ -290,7 +290,7 @@ def main():
             optimizer = torch.optim.SGD(model.parameters(), args.learning_rate, momentum=0.9, weight_decay=5e-4)
         elif args.optimizer == 'adam':
             optimizer = torch.optim.Adam(model.parameters(), args.learning_rate)
-        else:  # rmsprop
+        else:
             print('not supported optimizer \n')
             return None
 

@@ -171,8 +171,8 @@ def augmentations(image, label, args):
     image = v2.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.1)(image)
 
     # random horizontal flip
-    image = TF.hflip(image)
-    label = TF.hflip(label)
+    image = v2.RandomHorizontalFlip(p=1)(image)
+    label = v2.RandomHorizontalFlip(p=1)(label)
 
     # Random resize crop
     i, j, h, w = v2.RandomCrop.get_params(
