@@ -16,8 +16,8 @@ lambda_seg = 1  # Define the weight of the segmentation loss
 logger = logging.getLogger()
 
 
-def train(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dataloader_cityscapes):
-    #torch.autograd.set_detect_anomaly(True)
+def train(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dataloader_cityscapes, dataloader_val_cityscapes):
+    # torch.autograd.set_detect_anomaly(True)
     writer = SummaryWriter(comment=''.format(args.optimizer))
 
     scaler = amp.GradScaler()  # Initialize gradient scaler for mixed precision training
@@ -75,7 +75,7 @@ def train(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dataloader_city
             d32_gta5 = D(out32_gta5.detach())
             # Calculate loss for GTA5 datasets
             d_label_gta5 = torch.ones(d_gta5.size(0), 1, d_gta5.size(2),
-                                     d_gta5.size(3)).cuda()  # Labels are 1 for GTA5 datasets
+                                      d_gta5.size(3)).cuda()  # Labels are 1 for GTA5 datasets
             loss_d_gta5 = loss_func_d(d_gta5, d_label_gta5)
             loss_d_gta5 += loss_func_d(d16_gta5, d_label_gta5)
             loss_d_gta5 += loss_func_d(d32_gta5, d_label_gta5)
@@ -87,7 +87,7 @@ def train(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dataloader_city
             d32_cityscapes = D(out32_cityscapes.detach())
             # Calculate loss for Cityscapes datasets
             d_label_cityscapes = torch.zeros(d_cityscapes.size(0), 1, d_cityscapes.size(2),
-                                            d_cityscapes.size(3)).cuda()  # Labels are 0 for Cityscapes datasets
+                                             d_cityscapes.size(3)).cuda()  # Labels are 0 for Cityscapes datasets
             loss_d_cityscapes = loss_func_d(d_cityscapes, d_label_cityscapes)
             loss_d_cityscapes += loss_func_d(d16_cityscapes, d_label_cityscapes)
             loss_d_cityscapes += loss_func_d(d32_cityscapes, d_label_cityscapes)
@@ -98,23 +98,21 @@ def train(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dataloader_city
             optimizer_D.zero_grad()  # Zero the gradients
             scaler.scale(loss_d).backward()  # Scale loss and perform backpropagation
             scaler.step(optimizer_D)  # Perform optimizer step
-            
-            
+
             G.train()
             with amp.autocast():
-
                 output_cityscapes, out16_cityscapes, out32_cityscapes = G(data_cityscapes)
-                d_cityscapes=D(output_cityscapes)
-                d16_cityscapes=D(out16_cityscapes)
-                d32_cityscapes=D(out32_cityscapes)
+                d_cityscapes = D(output_cityscapes)
+                d16_cityscapes = D(out16_cityscapes)
+                d32_cityscapes = D(out32_cityscapes)
                 # Calculate the adversarial loss
                 loss_adv_cityscapes = loss_func_adv(d_cityscapes, d_label_cityscapes)
                 loss_adv_cityscapes16 = loss_func_adv(d16_cityscapes, d_label_cityscapes)
                 loss_adv_cityscapes32 = loss_func_adv(d32_cityscapes, d_label_cityscapes)
 
-            #loss_adv = loss_adv_cityscapes * lambda_adv + loss_adv_cityscapes16 * lambda_adv + loss_adv_cityscapes32 * lambda_adv
+            # loss_adv = loss_adv_cityscapes * lambda_adv + loss_adv_cityscapes16 * lambda_adv + loss_adv_cityscapes32 * lambda_adv
             loss_adv = loss_adv_cityscapes + loss_adv_cityscapes16 + loss_adv_cityscapes32
-            total_loss = loss_gta5 * lambda_seg + loss_adv
+            total_loss = loss_gta5 * lambda_seg + loss_adv * lambda_adv
 
             optimizer_G.zero_grad()  # Zero the gradients
             # backpropagation for adversarial loss to G model and not D model
@@ -124,12 +122,12 @@ def train(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dataloader_city
 
             tq.update(args.batch_size)
             tq.set_postfix(loss='%.6f' % total_loss)
-            #tq.set_postfix(loss='%.6f' % total_loss)
+            # tq.set_postfix(loss='%.6f' % total_loss)
             step += 1
             writer.add_scalar('loss_step', total_loss, step)
-            #writer.add_scalar('loss_step', total_loss, step)
+            # writer.add_scalar('loss_step', total_loss, step)
             loss_record.append(total_loss.item())
-            #loss_record.append(total_loss.item())
+            # loss_record.append(total_loss.item())
 
         tq.close()
         loss_train_mean = np.mean(loss_record)
@@ -142,9 +140,9 @@ def train(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dataloader_city
                 os.mkdir(args.save_model_path)
             torch.save(G.module.state_dict(), os.path.join(args.save_model_path, 'G_latest.pth'))
             torch.save(D.module.state_dict(), os.path.join(args.save_model_path, 'D_latest.pth'))
-            
+
         if epoch % args.validation_step == 0 and epoch != 0:
-            precision, miou = val(args, G, dataloader_cityscapes)
+            precision, miou = val(args, G, dataloader_val_cityscapes)
             if miou > max_miou:
                 max_miou = miou
                 import os
