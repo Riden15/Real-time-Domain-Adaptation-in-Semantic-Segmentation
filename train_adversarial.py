@@ -7,6 +7,8 @@ from tensorboardX import SummaryWriter
 import torch.cuda.amp as amp
 from utils import poly_lr_scheduler
 from tqdm import tqdm
+from train import val
+from timeit import default_timer as timer
 
 lambda_adv = 0.001  # Define the weight of the adversarial loss
 lambda_seg = 1  # Define the weight of the segmentation loss
@@ -26,8 +28,10 @@ def train(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dataloader_city
 
     max_miou = 0  # Variable to store the maximum mean IoU
     step = 0  # Variable to count training steps
+    train_times = []
 
     for epoch in range(args.num_epochs):
+        train_time_start = timer()
         lr_G = poly_lr_scheduler(optimizer_G, args.learning_rate, iter=epoch,
                                  max_iter=args.num_epochs)  # Update learning rate
         lr_D = poly_lr_scheduler(optimizer_D, args.learning_rate, iter=epoch,
@@ -108,8 +112,9 @@ def train(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dataloader_city
                 loss_adv_cityscapes16 = loss_func_adv(d16_cityscapes, d_label_cityscapes)
                 loss_adv_cityscapes32 = loss_func_adv(d32_cityscapes, d_label_cityscapes)
 
-            loss_adv = loss_adv_cityscapes * lambda_adv + loss_adv_cityscapes16 * lambda_adv + loss_adv_cityscapes32 * lambda_adv
-            #total_loss = loss_gta5 * lambda_seg + loss_adv
+            #loss_adv = loss_adv_cityscapes * lambda_adv + loss_adv_cityscapes16 * lambda_adv + loss_adv_cityscapes32 * lambda_adv
+            loss_adv = loss_adv_cityscapes + loss_adv_cityscapes16 + loss_adv_cityscapes32
+            total_loss = loss_gta5 * lambda_seg + loss_adv
 
             optimizer_G.zero_grad()  # Zero the gradients
             # backpropagation for adversarial loss to G model and not D model
@@ -118,12 +123,12 @@ def train(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dataloader_city
             scaler.update()
 
             tq.update(args.batch_size)
-            tq.set_postfix(loss='%.6f' % loss_adv)
+            tq.set_postfix(loss='%.6f' % total_loss)
             #tq.set_postfix(loss='%.6f' % total_loss)
             step += 1
-            writer.add_scalar('loss_step', loss_adv, step)
+            writer.add_scalar('loss_step', total_loss, step)
             #writer.add_scalar('loss_step', total_loss, step)
-            loss_record.append(loss_adv.item())
+            loss_record.append(total_loss.item())
             #loss_record.append(total_loss.item())
 
         tq.close()
@@ -135,5 +140,19 @@ def train(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dataloader_city
             import os
             if not os.path.isdir(args.save_model_path):
                 os.mkdir(args.save_model_path)
-            torch.save(G.module.state_dict(), os.path.join(args.save_model_path, 'G.pth'))
-            torch.save(D.module.state_dict(), os.path.join(args.save_model_path, 'D.pth'))
+            torch.save(G.module.state_dict(), os.path.join(args.save_model_path, 'G_latest.pth'))
+            torch.save(D.module.state_dict(), os.path.join(args.save_model_path, 'D_latest.pth'))
+            
+        if epoch % args.validation_step == 0 and epoch != 0:
+            precision, miou = val(args, G, dataloader_cityscapes)
+            if miou > max_miou:
+                max_miou = miou
+                import os
+                os.makedirs(args.save_model_path, exist_ok=True)
+                torch.save(G.module.state_dict(), os.path.join(args.save_model_path, 'G_best.pth'))
+            writer.add_scalar('epoch/precision_val', precision, epoch)
+            writer.add_scalar('epoch/miou val', miou, epoch)
+        train_time_end = timer()
+        train_times.append(train_time_end - train_time_start)
+
+    print(f'Average train time per epoch in minutes: {np.mean(train_times) / 60}')
