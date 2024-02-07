@@ -59,72 +59,82 @@ def train(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dataloader_city
                 loss3_gta5 = loss_func_seg(out32_gta5, label_gta5.squeeze(1))
                 loss_gta5 = loss1_gta5 + loss2_gta5 + loss3_gta5  # Combine losses
 
+                #Get predictions from the segmentation model on Cityscapes datasets
+                output_cityscapes, out16_cityscapes, out32_cityscapes = G(data_cityscapes)
+                
             scaler.scale(loss_gta5).backward()  # Scale loss and perform backpropagation
             scaler.step(optimizer_G)  # Perform optimizer step
 
-            #  Get predictions from the segmentation model on Cityscapes datasets
-            G.eval()  # Set the model to evaluation mode
-            with torch.no_grad():
-                output_cityscapes, out16_cityscapes, out32_cityscapes = G(data_cityscapes)
 
             # Train the discriminator with GTA5 datasets
-            D.train()  # Set the model to training mode
-            # Forward pass of GTA5 datasets through the discriminator
-            d_gta5 = D(output_gta5.detach())
-            d16_gta5 = D(out16_gta5.detach())
-            d32_gta5 = D(out32_gta5.detach())
-            # Calculate loss for GTA5 datasets
-            d_label_gta5 = torch.ones(d_gta5.size(0), 1, d_gta5.size(2),
-                                      d_gta5.size(3)).cuda()  # Labels are 1 for GTA5 datasets
-            loss_d_gta5 = loss_func_d(d_gta5, d_label_gta5)
-            loss_d_gta5 += loss_func_d(d16_gta5, d_label_gta5)
-            loss_d_gta5 += loss_func_d(d32_gta5, d_label_gta5)
+            for param in D.parameters():
+                param.requires_grad = False
 
-            # Train the discriminator with Cityscapes datasets
-            # Forward pass of Cityscapes datasets through the discriminator
-            d_cityscapes = D(output_cityscapes.detach())
-            d16_cityscapes = D(out16_cityscapes.detach())
-            d32_cityscapes = D(out32_cityscapes.detach())
-            # Calculate loss for Cityscapes datasets
             d_label_cityscapes = torch.zeros(d_cityscapes.size(0), 1, d_cityscapes.size(2),
-                                             d_cityscapes.size(3)).cuda()  # Labels are 0 for Cityscapes datasets
-            loss_d_cityscapes = loss_func_d(d_cityscapes, d_label_cityscapes)
-            loss_d_cityscapes += loss_func_d(d16_cityscapes, d_label_cityscapes)
-            loss_d_cityscapes += loss_func_d(d32_cityscapes, d_label_cityscapes)
-
-            # Combine the losses
-            loss_d = loss_d_gta5 + loss_d_cityscapes
-
-            optimizer_D.zero_grad()  # Zero the gradients
-            scaler.scale(loss_d).backward()  # Scale loss and perform backpropagation
-            scaler.step(optimizer_D)  # Perform optimizer step
-
-            G.train()
+                                             d_cityscapes.size(3)).cuda()  # Labels are 0 for Cityscapes datasets            
             with amp.autocast():
-                output_cityscapes, out16_cityscapes, out32_cityscapes = G(data_cityscapes)
                 d_cityscapes = D(output_cityscapes)
-                d16_cityscapes = D(out16_cityscapes)
-                d32_cityscapes = D(out32_cityscapes)
+                # d16_cityscapes = D(out16_cityscapes)
+                # d32_cityscapes = D(out32_cityscapes)
+                
                 # Calculate the adversarial loss
                 loss_adv_cityscapes = loss_func_adv(d_cityscapes, d_label_cityscapes)
-                loss_adv_cityscapes16 = loss_func_adv(d16_cityscapes, d_label_cityscapes)
-                loss_adv_cityscapes32 = loss_func_adv(d32_cityscapes, d_label_cityscapes)
+                # loss_adv_cityscapes16 = loss_func_adv(d16_cityscapes, d_label_cityscapes)
+                # loss_adv_cityscapes32 = loss_func_adv(d32_cityscapes, d_label_cityscapes)
 
-            # loss_adv = loss_adv_cityscapes * lambda_adv + loss_adv_cityscapes16 * lambda_adv + loss_adv_cityscapes32 * lambda_adv
-            loss_adv = loss_adv_cityscapes + loss_adv_cityscapes16 + loss_adv_cityscapes32
-            total_loss = loss_gta5 * lambda_seg + loss_adv * lambda_adv
-
-            optimizer_G.zero_grad()  # Zero the gradients
+            #loss_adv = loss_adv_cityscapes * lambda_adv + loss_adv_cityscapes16 * lambda_adv + loss_adv_cityscapes32 * lambda_adv
+            loss_adv = loss_adv_cityscapes * lambda_adv
+            #optimizer_G.zero_grad()  # Zero the gradients
             # backpropagation for adversarial loss to G model and not D model
             scaler.scale(loss_adv).backward()
             scaler.step(optimizer_G)
             scaler.update()
+            
+            total_loss = loss_gta5 * lambda_seg + loss_adv  # Combine segmentation and adversarial losses
+            
+            # bring back requires_grad
+            for param in D.parameters():
+                param.requires_grad = True
+                
+            with amp.autocast():
+                # Forward pass of GTA5 datasets through the discriminator
+                d_gta5 = D(output_gta5.detach())
+                # d16_gta5 = D(out16_gta5.detach())
+                # d32_gta5 = D(out32_gta5.detach())
+                # Calculate loss for GTA5 datasets
+                d_label_gta5 = torch.ones(d_gta5.size(0), 1, d_gta5.size(2),
+                                        d_gta5.size(3)).cuda()  # Labels are 1 for GTA5 datasets
+                loss_d_gta5 = loss_func_d(d_gta5, d_label_gta5)
+                # loss_d_gta5 += loss_func_d(d16_gta5, d_label_gta5)
+                # loss_d_gta5 += loss_func_d(d32_gta5, d_label_gta5)
+                
+            optimizer_D.zero_grad()  # Zero the gradients
+            scaler.scale(loss_d_gta5).backward()  # Scale loss and perform backpropagation
+            scaler.step(optimizer_D)  # Perform optimizer step
+
+            with amp.autocast():
+                # Train the discriminator with Cityscapes datasets
+                # Forward pass of Cityscapes datasets through the discriminator
+                d_cityscapes = D(output_cityscapes.detach())
+                # d16_cityscapes = D(out16_cityscapes.detach())
+                # d32_cityscapes = D(out32_cityscapes.detach())
+                # Calculate loss for Cityscapes datasets
+                
+                loss_d_cityscapes = loss_func_d(d_cityscapes, d_label_cityscapes)
+                # loss_d_cityscapes += loss_func_d(d16_cityscapes, d_label_cityscapes)
+                # loss_d_cityscapes += loss_func_d(d32_cityscapes, d_label_cityscapes)
+
+            optimizer_D.zero_grad()  # Zero the gradients
+            scaler.scale(loss_d_cityscapes).backward()  # Scale loss and perform backpropagation
+            scaler.step(optimizer_D)  # Perform optimizer step
 
             tq.update(args.batch_size)
             tq.set_postfix(loss='%.6f' % total_loss)
             # tq.set_postfix(loss='%.6f' % total_loss)
             step += 1
-            writer.add_scalar('loss_step', total_loss, step)
+            writer.add_scalar('seg_loss_step', loss_gta5, step)
+            writer.add_scalar('adv_loss_step', loss_adv, step)
+            writer.add_scalar('total_loss_step', total_loss, step)
             # writer.add_scalar('loss_step', total_loss, step)
             loss_record.append(total_loss.item())
             # loss_record.append(total_loss.item())
