@@ -12,3 +12,23 @@ the Machine Learning Course.
 - 2.C.1: ``--mode val --val_dataset Cityscapes --crop_height 512 --crop_width 1024 --save_model_path saved_models/2_B/best.pth``
 - 2.C.2: ``--train_dataset GTA_aug --val_dataset Cityscapes --pretrain_path STDCNET_weights/STDCNet813M_73.91.tar --batch_size 8 --learning_rate 0.01
           --num_epochs 50 --crop_height 512 --crop_width 1024 --tensor_board_path runs/2_C_2 --save_model_path saved_models/2_C_2 --optimizer sgd --loss crossentropy``
+- 3: ``--mode
+train_adversarial
+--pretrain_path
+STDCNET_weights/STDCNet813M_73.91.tar
+--batch_size
+8
+--learning_rate
+0.00025
+--discriminator_learning_rate
+0.0001
+--num_epochs
+50
+--crop_height
+512
+--crop_width
+1024
+--tensor_board_path
+runs/3
+--save_model_path
+saved_models/3``

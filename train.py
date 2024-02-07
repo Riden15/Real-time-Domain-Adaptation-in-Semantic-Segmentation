@@ -129,7 +129,7 @@ def train_adversarial(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dat
                       dataloader_val_cityscapes):
     lambda_adv = 0.001  # Define the weight of the adversarial loss
     lambda_seg = 1  # Define the weight of the segmentation loss
-    #torch.autograd.set_detect_anomaly(True)
+    torch.autograd.set_detect_anomaly(True)
     writer = SummaryWriter(logdir=args.tensor_board_path, comment=''.format(args.optimizer))
 
     scaler = amp.GradScaler()  # Initialize gradient scaler for mixed precision training
@@ -144,7 +144,7 @@ def train_adversarial(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dat
 
     for epoch in range(args.num_epochs):
         train_time_start = timer()
-        lr_G = poly_lr_scheduler(optimizer_G, args.generator_learning_rate, iter=epoch,
+        lr_G = poly_lr_scheduler(optimizer_G, args.learning_rate, iter=epoch,
                                  max_iter=args.num_epochs)  # Update learning rate
         lr_D = poly_lr_scheduler(optimizer_D, args.discriminator_learning_rate, iter=epoch,
                                  max_iter=args.num_epochs)  # Update learning rate
@@ -156,7 +156,7 @@ def train_adversarial(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dat
         for i, (data_gta5, data_cityscapes) in enumerate(zip(dataloader_gta5, dataloader_cityscapes)):
             data_gta5, label_gta5 = data_gta5  # Unpack GTA5 datasets
             data_gta5 = data_gta5.cuda()  # Move GTA5 images to GPU
-            label_gta5 = label_gta5.cuda()  # Move GTA5 labels to GPU
+            label_gta5 = label_gta5.long().cuda()  # Move GTA5 labels to GPU
             data_cityscapes, _ = data_cityscapes  # Unpack Cityscapes datasets
             data_cityscapes = data_cityscapes.cuda()  # Move Cityscapes datasets to GPU
             optimizer_G.zero_grad()  # Zero the gradients
@@ -173,43 +173,45 @@ def train_adversarial(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dat
                 loss3_gta5 = loss_func_seg(out32_gta5, label_gta5.squeeze(1))
                 loss_gta5 = loss1_gta5 + loss2_gta5 + loss3_gta5  # Combine losses
 
-                #Get predictions from the segmentation model on Cityscapes datasets
-                output_cityscapes, out16_cityscapes, out32_cityscapes = G(data_cityscapes)
-                
             scaler.scale(loss_gta5).backward()  # Scale loss and perform backpropagation
             scaler.step(optimizer_G)  # Perform optimizer step
             scaler.update()
-
+            
+            with amp.autocast():
+                # Get predictions from the segmentation model on Cityscapes datasets
+                output_cityscapes, _, _ = G(data_cityscapes)
+            optimizer_G.zero_grad()  # Zero the gradients
             # Train the discriminator with GTA5 datasets
             for param in D.parameters():
                 param.requires_grad = False
 
-            d_label_cityscapes = torch.zeros(d_cityscapes.size(0), 1, d_cityscapes.size(2),
-                                             d_cityscapes.size(3)).cuda()  # Labels are 0 for Cityscapes datasets            
             with amp.autocast():
                 d_cityscapes = D(output_cityscapes)
                 # d16_cityscapes = D(out16_cityscapes)
                 # d32_cityscapes = D(out32_cityscapes)
-                
+                d_label_cityscapes = torch.zeros(d_cityscapes.size(0), 1, d_cityscapes.size(2),
+                                                 d_cityscapes.size(
+                                                     3)).cuda()  # Labels are 0 for Cityscapes datasets
+
                 # Calculate the adversarial loss
                 loss_adv_cityscapes = loss_func_adv(d_cityscapes, d_label_cityscapes)
                 # loss_adv_cityscapes16 = loss_func_adv(d16_cityscapes, d_label_cityscapes)
                 # loss_adv_cityscapes32 = loss_func_adv(d32_cityscapes, d_label_cityscapes)
 
-            #loss_adv = loss_adv_cityscapes * lambda_adv + loss_adv_cityscapes16 * lambda_adv + loss_adv_cityscapes32 * lambda_adv
+            # loss_adv = loss_adv_cityscapes * lambda_adv + loss_adv_cityscapes16 * lambda_adv + loss_adv_cityscapes32 * lambda_adv
             loss_adv = loss_adv_cityscapes * lambda_adv
-            #optimizer_G.zero_grad()  # Zero the gradients
+            # optimizer_G.zero_grad()  # Zero the gradients
             # backpropagation for adversarial loss to G model and not D model
             scaler.scale(loss_adv).backward()
             scaler.step(optimizer_G)
             scaler.update()
-            
+
             total_loss = loss_gta5 * lambda_seg + loss_adv  # Combine segmentation and adversarial losses
-            
+
             # bring back requires_grad
             for param in D.parameters():
                 param.requires_grad = True
-                
+
             with amp.autocast():
                 # Forward pass of GTA5 datasets through the discriminator
                 d_gta5 = D(output_gta5.detach())
@@ -217,15 +219,15 @@ def train_adversarial(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dat
                 # d32_gta5 = D(out32_gta5.detach())
                 # Calculate loss for GTA5 datasets
                 d_label_gta5 = torch.ones(d_gta5.size(0), 1, d_gta5.size(2),
-                                        d_gta5.size(3)).cuda()  # Labels are 1 for GTA5 datasets
+                                          d_gta5.size(3)).cuda()  # Labels are 1 for GTA5 datasets
                 loss_d_gta5 = loss_func_d(d_gta5, d_label_gta5)
                 # loss_d_gta5 += loss_func_d(d16_gta5, d_label_gta5)
                 # loss_d_gta5 += loss_func_d(d32_gta5, d_label_gta5)
-                
+
             scaler.scale(loss_d_gta5).backward()  # Scale loss and perform backpropagation
             scaler.step(optimizer_D)  # Perform optimizer step
             scaler.update()
-            
+
             with amp.autocast():
                 # Train the discriminator with Cityscapes datasets
                 # Forward pass of Cityscapes datasets through the discriminator
@@ -233,7 +235,7 @@ def train_adversarial(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dat
                 # d16_cityscapes = D(out16_cityscapes.detach())
                 # d32_cityscapes = D(out32_cityscapes.detach())
                 # Calculate loss for Cityscapes datasets
-                
+
                 loss_d_cityscapes = loss_func_d(d_cityscapes, d_label_cityscapes)
                 # loss_d_cityscapes += loss_func_d(d16_cityscapes, d_label_cityscapes)
                 # loss_d_cityscapes += loss_func_d(d32_cityscapes, d_label_cityscapes)
@@ -363,10 +365,6 @@ def parse_args():
                        type=float,
                        default=0.01,
                        help='learning rate used for discriminator train')
-    parse.add_argument('--generator_learning_rate',
-                       type=float,
-                       default=0.01,
-                       help='learning rate used for generator train')
     parse.add_argument('--num_workers',
                        type=int,
                        default=4,
@@ -511,7 +509,7 @@ def main():
                                     drop_last=True)
 
         # optimizers
-        optimizer_G = torch.optim.SGD(model.parameters(), lr=args.generator_learning_rate, momentum=0.9,
+        optimizer_G = torch.optim.SGD(model.parameters(), lr=args.learning_rate, momentum=0.9,
                                       weight_decay=10e-4)
         optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=args.discriminator_learning_rate)
 
