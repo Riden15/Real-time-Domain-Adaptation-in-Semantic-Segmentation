@@ -176,7 +176,7 @@ def train_adversarial(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dat
             scaler.scale(loss_gta5).backward()  # Scale loss and perform backpropagation
             scaler.step(optimizer_G)  # Perform optimizer step
             scaler.update()
-            
+
             with amp.autocast():
                 # Get predictions from the segmentation model on Cityscapes datasets
                 output_cityscapes, _, _ = G(data_cityscapes)
@@ -246,7 +246,7 @@ def train_adversarial(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dat
             scaler.update()
 
             tq.update(args.batch_size)
-            tq.set_postfix(loss='%.6f' % total_loss)
+            tq.set_postfix(loss_seg='%.6f' % loss_gta5, loss_adv='%.6f' % loss_adv, total_loss='%.6f' % total_loss)
             # tq.set_postfix(loss='%.6f' % total_loss)
             step += 1
             writer.add_scalar('seg_loss_step', loss_gta5, step)
