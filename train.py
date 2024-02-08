@@ -61,7 +61,7 @@ def val(args, model, dataloader):
 
 
 def train(args, model, optimizer, dataloader_train, dataloader_val):
-    writer = SummaryWriter(logdir=args.tensor_board_path, comment=''.format(args.optimizer))
+    writer = SummaryWriter(logdir=args.tensorboard_path, comment=''.format(args.optimizer))
 
     scaler = amp.GradScaler()
 
@@ -130,7 +130,7 @@ def train_adversarial(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dat
     lambda_adv = 0.001  # Define the weight of the adversarial loss
     lambda_seg = 1  # Define the weight of the segmentation loss
     torch.autograd.set_detect_anomaly(True)
-    writer = SummaryWriter(logdir=args.tensor_board_path, comment=''.format(args.optimizer))
+    writer = SummaryWriter(logdir=args.tensorboard_path, comment=''.format(args.optimizer))
 
     scaler = amp.GradScaler()  # Initialize gradient scaler for mixed precision training
 
@@ -171,9 +171,9 @@ def train_adversarial(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dat
                 loss1_gta5 = loss_func_seg(output_gta5, label_gta5.squeeze(1))
                 loss2_gta5 = loss_func_seg(out16_gta5, label_gta5.squeeze(1))
                 loss3_gta5 = loss_func_seg(out32_gta5, label_gta5.squeeze(1))
-                loss_gta5 = loss1_gta5 + loss2_gta5 + loss3_gta5  # Combine losses
+                loss_seg = loss1_gta5 + loss2_gta5 + loss3_gta5  # Combine losses
 
-            scaler.scale(loss_gta5).backward()  # Scale loss and perform backpropagation
+            scaler.scale(loss_seg).backward()  # Scale loss and perform backpropagation
             scaler.step(optimizer_G)  # Perform optimizer step
             scaler.update()
 
@@ -206,7 +206,7 @@ def train_adversarial(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dat
             scaler.step(optimizer_G)
             scaler.update()
 
-            total_loss = loss_gta5 * lambda_seg + loss_adv  # Combine segmentation and adversarial losses
+            total_loss = loss_seg * lambda_seg + loss_adv  # Combine segmentation and adversarial losses
 
             # bring back requires_grad
             for param in D.parameters():
@@ -246,15 +246,13 @@ def train_adversarial(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dat
             scaler.update()
 
             tq.update(args.batch_size)
-            tq.set_postfix(loss_seg='%.6f' % loss_gta5, loss_adv='%.6f' % loss_adv, total_loss='%.6f' % total_loss)
-            # tq.set_postfix(loss='%.6f' % total_loss)
+            tq.set_postfix(loss_seg='%.6f' % loss_seg, loss_adv='%.6f' % loss_adv, loss_cs='%.6f' % loss_d_cityscapes,
+                           loss_gta='%.6f' % loss_d_gta5, total_loss='%.6f' % total_loss)
             step += 1
-            writer.add_scalar('seg_loss_step', loss_gta5, step)
+            writer.add_scalar('seg_loss_step', loss_seg, step)
             writer.add_scalar('adv_loss_step', loss_adv, step)
-            writer.add_scalar('total_loss_step', total_loss, step)
-            # writer.add_scalar('loss_step', total_loss, step)
+            writer.add_scalar('loss_step', total_loss, step)
             loss_record.append(total_loss.item())
-            # loss_record.append(total_loss.item())
 
         tq.close()
         loss_train_mean = np.mean(loss_record)
@@ -381,7 +379,7 @@ def parse_args():
                        type=str2bool,
                        default=True,
                        help='whether to user gpu for training')
-    parse.add_argument('--tensor_board_path',
+    parse.add_argument('--tensorboard_path',
                        type=str,
                        default='runs',
                        help='path to save graph for TensorBoard')
@@ -402,6 +400,7 @@ def main():
 
     n_classes = args.num_classes
     mode = args.mode
+    torch.manual_seed(42)
 
     # model
     model = BiSeNet(backbone=args.backbone, n_classes=n_classes, pretrain_model=args.pretrain_path,
@@ -510,7 +509,7 @@ def main():
 
         # optimizers
         optimizer_G = torch.optim.SGD(model.parameters(), lr=args.learning_rate, momentum=0.9,
-                                      weight_decay=10e-4)
+                                      weight_decay=5e-4)
         optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=args.discriminator_learning_rate)
 
         # load model to gpu
