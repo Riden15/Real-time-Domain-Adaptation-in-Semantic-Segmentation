@@ -15,7 +15,7 @@ import torch.cuda.amp as amp
 from utils import poly_lr_scheduler
 from utils import reverse_one_hot, compute_global_accuracy, fast_hist, per_class_iu
 from tqdm import tqdm
-from model.discriminator import Discriminator
+from model.discriminator import Discriminator, DepthwiseDiscriminator
 
 logger = logging.getLogger()
 
@@ -303,6 +303,11 @@ def parse_args():
                        type=str,
                        default='CatmodelSmall',
                        )
+    parse.add_argument('--depthwise_discriminator',
+                       dest='depthwise_discriminator',
+                       type=str2bool,
+                       default=False,
+                       )
     parse.add_argument('--train_dataset',
                        dest='train_dataset',
                        type=str,
@@ -406,8 +411,6 @@ def main():
     model = BiSeNet(backbone=args.backbone, n_classes=n_classes, pretrain_model=args.pretrain_path,
                     use_conv_last=args.use_conv_last)
 
-    discriminator = Discriminator(in_channels=n_classes)
-
     if mode == 'train':
 
         # dataset class
@@ -506,6 +509,12 @@ def main():
                                     num_workers=args.num_workers,
                                     pin_memory=False,
                                     drop_last=True)
+        
+        # create Discriminator class
+        if args.depthwise_discriminator:
+            discriminator = DepthwiseDiscriminator(in_channels=n_classes)
+        else:
+            discriminator = Discriminator(in_channels=n_classes)
 
         # optimizers
         optimizer_G = torch.optim.SGD(model.parameters(), lr=args.learning_rate, momentum=0.9,
