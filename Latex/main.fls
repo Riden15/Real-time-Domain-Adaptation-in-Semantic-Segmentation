@@ -140,20 +140,20 @@ INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/amsfonts/symbols/msbm7.tfm
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/amsfonts/symbols/msbm5.tfm
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/times/ptmr7t.tfm
-INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/cm/cmr9.tfm
-INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/cm/cmmi9.tfm
-INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/cm/cmsy9.tfm
-INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/amsfonts/cmextra/cmex9.tfm
-INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/amsfonts/symbols/msam10.tfm
-INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
-INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/times/ptmb7t.tfm
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/times/ptmrc7t.tfm
+INPUT ./figures/Figure1-STDCnet.png
+INPUT ./figures/Figure1-STDCnet.png
+INPUT ./figures/Figure1-STDCnet.png
+INPUT ./figures/Figure1-STDCnet.png
+OUTPUT main.pdf
+INPUT ./figures/Figure1-STDCnet.png
+INPUT ./figures/Figure1-STDCnet.png
+INPUT ./figures/Figure1-STDCnet.png
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/amsfonts/symbols/msam10.tfm
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/amsfonts/symbols/msam7.tfm
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/amsfonts/symbols/msbm7.tfm
-OUTPUT main.pdf
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/vf/adobe/times/ptmr7t.vf
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/times/ptmr8r.tfm
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/data/fonts/map/pdftex/pdftex.map
@@ -173,8 +173,6 @@ INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/times/ptmbi8r.tfm
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/vf/adobe/times/ptmb7t.vf
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/times/ptmb8r.tfm
-INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/vf/adobe/times/ptmb7t.vf
-INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/times/ptmb8r.tfm
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/vf/adobe/times/ptmrc7t.vf
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/vf/adobe/times/ptmr7t.vf
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/times/ptmr8r.tfm
@@ -182,6 +180,12 @@ INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/tex/latex/psnfss/ot1pcr.fd
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/tex/latex/psnfss/ot1pcr.fd
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/courier/pcrr7t.tfm
+INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/vf/adobe/times/ptmri7t.vf
+INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/times/ptmri8r.tfm
+INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/vf/adobe/courier/pcrr7t.vf
+INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/courier/pcrr8r.tfm
+INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/vf/adobe/times/ptmb7t.vf
+INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/times/ptmb8r.tfm
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/times/ptmrc7t.tfm
 INPUT ./figures/fig1.png
 INPUT ./figures/fig1.png
@@ -193,12 +197,6 @@ INPUT ./figures/fig1.png
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/tex/latex/psnfss/omsptm.fd
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/tex/latex/psnfss/omsptm.fd
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/tex/latex/psnfss/omsptm.fd
-INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/vf/adobe/times/ptmri7t.vf
-INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/times/ptmri8r.tfm
-INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/vf/adobe/courier/pcrr7t.vf
-INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/courier/pcrr8r.tfm
-INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/vf/adobe/times/ptmb7t.vf
-INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/times/ptmb8r.tfm
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/vf/adobe/times/ptmrc7t.vf
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/times/ptmr8r.tfm
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/vf/adobe/times/ptmb7t.vf
@@ -209,6 +207,8 @@ INPUT main.aux
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/enc/dvips/base/8r.enc
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi10.pfb
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi10.pfb
+INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi7.pfb
+INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi7.pfb
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr10.pfb
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr10.pfb
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr6.pfb

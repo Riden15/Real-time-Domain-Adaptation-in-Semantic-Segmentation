@@ -103,6 +103,17 @@ class Gta(Dataset):
         """
         return len(self.data)
 
+    def set_augmentation(self, data_augmentation):
+        """
+        Sets the data augmentation flag
+
+        Parameters
+        ----------
+            data_augmentation : bool
+                The value to be set
+        """
+        self.data_augmentation = data_augmentation
+
 
 def transform(image, label, args):
     """
