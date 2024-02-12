@@ -1,6 +1,6 @@
 # Fdb version 4
-["pdflatex"] 1707667794 "/Users/nicholas.berardo/Desktop/AML_SemSeg/Real-time-Domain-Adaptation-in-Semantic-Segmentation/Latex/main.tex" "main.pdf" "main" 1707667794 0
-  "/Users/nicholas.berardo/Desktop/AML_SemSeg/Real-time-Domain-Adaptation-in-Semantic-Segmentation/Latex/main.tex" 1707667792 19669 44a55ff56dd04601187e4afe66909538 ""
+["pdflatex"] 1707728273 "/Users/nicholas.berardo/Desktop/AML_SemSeg/Real-time-Domain-Adaptation-in-Semantic-Segmentation/Latex/main.tex" "main.pdf" "main" 1707728273 0
+  "/Users/nicholas.berardo/Desktop/AML_SemSeg/Real-time-Domain-Adaptation-in-Semantic-Segmentation/Latex/main.tex" 1707728272 25167 417416968efa8c521152730db04593d1 ""
   "/Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/data/fonts/map/pdftex/pdftex.map" 1706886664 82507 a9eef8696c92627b87e9975edea03b2a ""
   "/Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/data/miktex/data/le/pdftex/pdflatex.fmt" 1698078531 24188732 2e41be34445babb52f22dd911e549f4c ""
   "/Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/enc/dvips/base/8r.enc" 1682844652 4993 1194fb36dfcb11d9ae9802f2b00b60a3 ""
@@ -35,6 +35,7 @@
   "/Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/cm/cmsy8.tfm" 1682844652 1120 8b7d695260f3cff42e636090a8002094 ""
   "/Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi10.pfb" 1682844638 36299 5f9df58c2139e7edcf37c8fca4bd384d ""
   "/Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi7.pfb" 1682844638 36281 c355509802a035cadc5f15869451dcee ""
+  "/Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi8.pfb" 1682844638 35469 70d41d2b9ea31d5d813066df7c99281c ""
   "/Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1682844638 35752 024fb6c41858982481f6968b5fc26508 ""
   "/Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr6.pfb" 1682844638 32734 69e00a6b65cedb993666e42eedb3d48f ""
   "/Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr7.pfb" 1682844638 32762 224316ccc9ad3ca0423a14971cfa7fc1 ""
@@ -83,8 +84,8 @@
   "/Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/tex/latex/xcolor/xcolor.sty" 1682844662 56148 51a9a8571c07b9921892ae11063ae853 ""
   "figures/Figure1-STDCnet.png" 1707210069 216599 812e895d0f057e7d1abd40e73e51d983 ""
   "figures/fig1.png" 1706886716 9693 22ec4d7970d4846cc0a718a0eb9130c8 ""
-  "main.aux" 1707667794 3004 cbe1e16bf686e49c8fccffb81e9cbfe5 "pdflatex"
-  "main.tex" 1707667792 19669 44a55ff56dd04601187e4afe66909538 ""
+  "main.aux" 1707728273 4350 7fe427c22e8781bc49af441f5a3dae03 "pdflatex"
+  "main.tex" 1707728272 25167 417416968efa8c521152730db04593d1 ""
   (generated)
   "main.aux"
   "main.log"

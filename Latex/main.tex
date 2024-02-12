@@ -74,8 +74,8 @@ with GTAV as source domain and Cityscapes as target domain. Lastly we apply some
 discriminator function in order to make it faster. 
 
 
-\begin{figure}[htbp]
-\centerline{\includegraphics{figures/Figure1-STDCnet.png}}
+\begin{figure}[tp]
+\centerline{\includegraphics[width=0.4\textwidth]{figures/Figure1-STDCnet.png}}
 \caption{STDC network.}
 \label{stdc_net}
 \end{figure}
@@ -110,11 +110,139 @@ developed above. The loss is
 where \(L_{seg}\) is the cross entropy loss for the prediction of the source domain, \(\lambda_{adv}\) is the weight used to 
 balance the \(L_{adv}\) that is a BCEWithLogitLoss.
 We first forward \(I_s\) to the segmentation newtork to get the predition \(P_s\) and the loss \(L_{seg}\). Then forward \(I_t\) to
-the segmentation network to get the predition \(P_t\) and feed these two predition to the discriminator 
-
-
+the segmentation network to get the predition \(P_t\) and feed these two predition to the discriminator.
+CHIEDERE DISCRIMINATORE a cosa serve la lossd
 
 \section{Experiments}
+
+We have done the following experiments: (1) train on Cityscapes and test on Cityscapes, (2) train on GTA5 and test on GTA5, (3) train on 
+GTA5 and test on Cityscapes without domain adaptation, (4) train on GTA5 and test on Cityscapes without domain adaptation with some
+augmentation on GTA5, (5) train on GTA5 and test on Cityscapes with domain adaptation and (6) train on GTA5 and test on Cityscapes with
+domain adaptation with a lighter discriminator. 
+We use as optimizer the SGD (Stocastic Gradient Descent) with momentum set at 0.9 and weight decay at \(5e^{-4}\). We use a batch size of 
+2 and poly learning rate where the learning rate is updated as follow \(lr = init\_lr * (1 - \frac{iter}{max\_iter})^{power}\), where
+\(init\_lr\) is 0.01, \(iter\) is the actual epoch, \(max\_iter\) is the number of epochs and \(power\) is 0.9. Data augmentation, when
+used, contains Color Jitter, Random Horizontal Flip, Random Crop and Normalization. The disciminator for the domain apadtation part
+is trained using Adam with a poly learning rate with the same parameter as before. 
+We perform our experiments with those versions:\textbf{TODO!!!!!!!!!}
+
+(1) Here we trained our model on Cityscapes train set and test it on Cityscapes validation set. Here there's no domain adaptation, so
+we expect to have high results. Table~\ref{CityscapesToCityscapes} shows the results.
+
+(2) We train our model on GTA5 train set and test it on GTA5 validation set. Again we expect high results.  
+Table~\ref{GTATOGTA} shows the results.
+
+(3) Here we evaluate the domain shift between GTA5 and Cityscapes. We train on GTA5 train set and test on Cityscapes validation set.
+Here we don't have any domain adaptation method, so we expect bad results. Table~\ref{GTATOCITYSCAPESNOADAP} shows the results. We can 
+see that the mIoU is low, this because the source domain and target domain are different. 
+
+(4) Again we evaluate the domain shift between GTA5 and Cityscapes, but this time with some augmentation on GTA5. Table~\ref{GTATOCITYSCAPESNOADAPAUG}
+shows the results and again the mIoU is low beacause of the domain shift.
+
+(5) Here we have domain adaptation \cite{b3}. So we train on GTA5 and test on Cityscapes, but this time we train also the discriminator
+with the segmentation network. Table~\ref{GTATOCITYSCAPESADAP} shows the results. We can see a slight improvement of performance
+in the mIoU of 3\% with respect to (4).
+
+(6) Finally we implement depthwise convolution in the discriminator. Again same thing as (5) but with a lighter discriminator. Table
+~\ref{GTATOCITYSCAPESADAPLIGHT} shows the results. 
+
+
+
+\begin{table}[tb]
+\caption{Train on Cityscapes train set and test it Cityscapes val set}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{\textbf{Cityscapes -$>$ Cityscapes}} \\
+\cline{1-3} 
+\textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
+\hline
+81.1& 58.6& 2.5 minutes   \\
+\hline
+\end{tabular}
+\label{CityscapesToCityscapes}
+\end{center}
+\end{table}
+
+\begin{table}[tb]
+\caption{Train on GTA5 train set and test it GTA5 val set}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{\textbf{GTA5 -$>$ GTA5}} \\
+\cline{1-3} 
+\textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
+\hline
+80.82& 62.36& 3,4 minutes   \\
+\hline
+\end{tabular}
+\label{GTATOGTA}
+\end{center}
+\end{table}
+
+\begin{table}[tb]
+\caption{Train on GTA5 train set and test it Cityscapes val set without adaptation}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{\textbf{GTA5 -$>$ Cityscapes}} \\
+\cline{1-3} 
+\textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
+\hline
+& & \\
+\hline
+\end{tabular}
+\label{GTATOCITYSCAPESNOADAP}
+\end{center}
+\end{table}
+
+\begin{table}[tb]
+\caption{Train on GTA5 augemnted train set and test it Cityscapes val set without adaptation}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{\textbf{GTA5 -$>$ Cityscapes}} \\
+\cline{1-3} 
+\textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
+\hline
+71 & 30 & 5.37 minutes \\
+\hline
+\end{tabular}
+\label{GTATOCITYSCAPESNOADAPAUG}
+\end{center}
+\end{table}
+
+\begin{table}[tb]
+\caption{Train on GTA5 augemnted train set and test it Cityscapes val set with adaptation}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{\textbf{GTA5 -$>$ Cityscapes}} \\
+\cline{1-3} 
+\textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
+\hline
+74 & 33 & 4.55 minutes \\
+\hline
+\end{tabular}
+\label{GTATOCITYSCAPESADAP}
+\end{center}
+\end{table}
+
+\begin{table}[tb]
+\caption{Train on GTA5 augemnted train set and test it Cityscapes val set with lighter adaptation}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{\textbf{GTA5 -$>$ Cityscapes}} \\
+\cline{1-3} 
+\textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
+\hline
+73& 32.5& 4.5 minutes\\
+\hline
+\end{tabular}
+\label{GTATOCITYSCAPESADAPLIGHT}
+\end{center}
+\end{table}
 
 \section{Conclusion}
 
