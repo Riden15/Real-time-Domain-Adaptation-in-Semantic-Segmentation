@@ -16,3 +16,13 @@ the Machine Learning Course.
       --discriminator_learning_rate 0.001 --num_epochs 50 --crop_height 512 --crop_width 1024 --tensorboard_path runs/3 --save_model_path saved_models/3``
 - 4: ``--mode train_adversarial --depthwise_discriminator true --pretrain_path STDCNET_weights/STDCNet813M_73.91.tar --batch_size 8 --learning_rate 0.01
       --discriminator_learning_rate 0.001 --num_epochs 50 --crop_height 512 --crop_width 1024 --tensorboard_path runs/4 --save_model_path saved_models/4``
+
+
+|      | num sets | density | number of evaluation | best fitness |
+|------|----------|---------|----------------------|--------------|
+| 100  | 100      | .3      | 200                  | (100, -14)   |
+| 100  | 100      | .7      | 200                  | (100, -21)   |
+| 1000 | 1000     | .3      | 2.000                | (1000, -183) |
+| 1000 | 1000     | .7      | 2.000                | (1000, -192) |
+| 5000 | 5000     | .3      | 10.000               | (5000, -929) |
+| 5000 | 5000     | .7      | 10.000               | (5000, -)    |
