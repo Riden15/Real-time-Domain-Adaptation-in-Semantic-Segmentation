@@ -7,6 +7,7 @@
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
+\usepackage{hyperref}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
@@ -73,6 +74,7 @@ firstly in vanilla, then with some augmentation on GTAV. Fourth we implement the
 with GTAV as source domain and Cityscapes as target domain. Lastly we apply some real-time semantic segmentation method to our 
 discriminator function in order to make it faster. 
 
+Here a look to our implementation: \url{https://github.com/Riden15/Real-time-Domain-Adaptation-in-Semantic-Segmentation}
 
 \begin{figure}[tp]
 \centerline{\includegraphics[width=0.4\textwidth]{figures/Figure1-STDCnet.png}}
@@ -122,6 +124,29 @@ depthwise convolution layer, leaky ReLU, pointwise convolution and again leaky R
 
 \section{Experiments}
 
+\begin{figure}[tp]
+\centerline{\includegraphics[width=0.4\textwidth]{figures/loss.png}}
+\caption{Loss step during training. On the X we have the epochs, on Y we have the loss. (1) is the gray curve, (2) is the light blue
+curve, (3) is the light blue curve again, (4) is the pink curve, (5) is the orange curve and (6) is the purple curve.}
+\label{loss_steps}
+\end{figure}
+
+\begin{figure}[tp]
+\centerline{\includegraphics[width=0.4\textwidth]{figures/miou.png}}
+\caption{mIoU during training. On the X we have the epochs, on Y we have the mIoU. (1) is the gray curve, (2) is the light blue
+curve, (4) is the pink curve, (5) is the orange curve and (6) is the purple curve.}
+\label{miou}
+\end{figure}
+
+\begin{figure}[tp]
+\centerline{\includegraphics[width=0.4\textwidth]{figures/precision.png}}
+\caption{Precision during training. On the X we have the epochs, on Y we have the precision. (1) is the gray curve, (2) is the light blue
+curve, (4) is the pink curve, (5) is the orange curve and (6) is the purple curve.}
+\label{precision}
+\end{figure}
+
+
+
 We have done the following experiments: (1) train on Cityscapes and test on Cityscapes, (2) train on GTA5 and test on GTA5, (3) train on 
 GTA5 and test on Cityscapes without domain adaptation, (4) train on GTA5 and test on Cityscapes without domain adaptation with some
 augmentation on GTA5, (5) train on GTA5 and test on Cityscapes with domain adaptation and (6) train on GTA5 and test on Cityscapes with
@@ -132,6 +157,10 @@ We use as optimizer the SGD (Stocastic Gradient Descent) with momentum set at 0.
 used, contains Color Jitter, Random Horizontal Flip, Random Crop and Normalization. The disciminator for the domain apadtation part
 is trained using Adam with a poly learning rate with the same parameter as before. 
 We perform our experiments with those versions:\textbf{TODO!!!!!!!!!}
+
+In Fig.~\ref{loss_steps} we can see the loss step during train time. The one that can achive a better low (lower) are the experiments
+where there isn't a domain shift. Same thing happend with the mean Intersection over Union (mIoU) in Fig.~\ref{miou} and with the
+precision in Fig.~\ref{precision}. 
 
 (1) Here we trained our model on Cityscapes train set and test it on Cityscapes validation set. Here there's no domain adaptation, so
 we expect to have high results. Table~\ref{CityscapesToCityscapes} shows the results.
@@ -165,7 +194,7 @@ in the mIoU of 3\% with respect to (4).
 \cline{1-3} 
 \textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
 \hline
-81.1& 58.6& 2.5 minutes   \\
+81.1& 58.6& 2.3 minutes   \\
 \hline
 \end{tabular}
 \label{CityscapesToCityscapes}
@@ -181,7 +210,7 @@ in the mIoU of 3\% with respect to (4).
 \cline{1-3} 
 \textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
 \hline
-80.82& 62.36& 3,4 minutes   \\
+80.8& 62.3& 3.2 minutes   \\
 \hline
 \end{tabular}
 \label{GTATOGTA}
@@ -197,7 +226,7 @@ in the mIoU of 3\% with respect to (4).
 \cline{1-3} 
 \textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
 \hline
-60.1 & 24.6 & \textbf{????} \\
+60.1 & 24.6 & 3.2 minutes \\
 \hline
 \end{tabular}
 \label{GTATOCITYSCAPESNOADAP}
@@ -229,7 +258,7 @@ in the mIoU of 3\% with respect to (4).
 \cline{1-3} 
 \textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
 \hline
-74 & 33 & 4.55 minutes \\
+74 & 33 & 4.30 minutes \\
 \hline
 \end{tabular}
 \label{GTATOCITYSCAPESADAP}
@@ -245,7 +274,7 @@ in the mIoU of 3\% with respect to (4).
 \cline{1-3} 
 \textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
 \hline
-73& 32.5& 4.5 minutes\\
+73& 32.5& 4.25 minutes\\
 \hline
 \end{tabular}
 \label{GTATOCITYSCAPESADAPLIGHT}
