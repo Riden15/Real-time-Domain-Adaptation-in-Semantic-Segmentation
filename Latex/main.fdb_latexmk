@@ -1,6 +1,6 @@
 # Fdb version 4
-["pdflatex"] 1707916380 "/Users/nicholas.berardo/Desktop/AML_SemSeg/Real-time-Domain-Adaptation-in-Semantic-Segmentation/Latex/main.tex" "main.pdf" "main" 1707916382 0
-  "/Users/nicholas.berardo/Desktop/AML_SemSeg/Real-time-Domain-Adaptation-in-Semantic-Segmentation/Latex/main.tex" 1707916380 18243 f77eb725d908c63ce1f86dd7bca1c0f2 ""
+["pdflatex"] 1708003736 "/Users/nicholas.berardo/Desktop/AML_SemSeg/Real-time-Domain-Adaptation-in-Semantic-Segmentation/Latex/main.tex" "main.pdf" "main" 1708003737 0
+  "/Users/nicholas.berardo/Desktop/AML_SemSeg/Real-time-Domain-Adaptation-in-Semantic-Segmentation/Latex/main.tex" 1708003735 17968 c74e906c14c7881e51ed37ea3dbcf7f4 ""
   "/Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/data/fonts/map/pdftex/pdftex.map" 1706886664 82507 a9eef8696c92627b87e9975edea03b2a ""
   "/Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/data/miktex/data/le/pdftex/pdflatex.fmt" 1698078531 24188732 2e41be34445babb52f22dd911e549f4c ""
   "/Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/enc/dvips/base/8r.enc" 1682844652 4993 1194fb36dfcb11d9ae9802f2b00b60a3 ""
@@ -108,9 +108,9 @@
   "figures/loss.png" 1707913048 167321 dfc07ee4989d5caf716d51b9348d252c ""
   "figures/miou.png" 1707913116 156015 2a45400cf7852b0552f662a05d28945e ""
   "figures/precision.png" 1707913176 231668 41811d53c224c98cd18acbc0cc070d9b ""
-  "main.aux" 1707916381 5369 0b5c1148a9e2fda660b25521057afbd6 "pdflatex"
-  "main.out" 1707916381 572 259ddea28d8aba062f97614e6f4f4770 "pdflatex"
-  "main.tex" 1707916380 18243 f77eb725d908c63ce1f86dd7bca1c0f2 ""
+  "main.aux" 1708003736 5647 5e479989a0281d36fee3775c1558cab5 "pdflatex"
+  "main.out" 1708003736 911 680fd4be8d660acd4d575266b726194f "pdflatex"
+  "main.tex" 1708003735 17968 c74e906c14c7881e51ed37ea3dbcf7f4 ""
   (generated)
   "main.aux"
   "main.log"

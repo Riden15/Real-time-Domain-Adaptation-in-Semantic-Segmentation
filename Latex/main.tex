@@ -85,9 +85,7 @@ Here a look to our implementation: \url{https://github.com/Riden15/Real-time-Dom
 \section{Related Word}
 
 \textbf{TODO}
-Dataset descriptions
 Related work
-Scrivere le reference
 \section{Methods}
 
 We first introduce the Short-Term Dense Concatenate network (STDC network) and how we used it with BiSeNet \cite{b2},
@@ -120,7 +118,7 @@ Then forward \(I_t\) to the segmentation network to get the predition \(P_t\) an
 with label 1 and finally computing the loss on the Cityscape image, with label 0. 
 
 Finally we also tried to apply some real-time semanitc segmentation method to our discriminator to make is lighter and faster.
-We build a discriminator using depthwise separable convolutions, following MobileNets \cite{b4}. These are composed of two part: 
+We build a discriminator using depthwise separable convolutions, following MobileNets \cite{b6}. These are composed of two part: 
 depthwise convolutions and pointwise convolutions. Depthwise convolutions are used to filter each input channel, but they can
 only filter so we use pointwise convolutions (1 x 1 kernel size) to generate new features. Now our discriminator is based on blocks of
 depthwise convolution layer, leaky ReLU, pointwise convolution and again leaky ReLU. 
@@ -148,7 +146,17 @@ curve, (4) is the pink curve, (5) is the orange curve and (6) is the purple curv
 \label{precision}
 \end{figure}
 
-
+\subsection{GTA5}
+GTA5 dataset \cite{b4} is composed of around 25K images with resolution 1914 x 1052 synthesized from the videogame based on Los Angeles.
+The dataset is also composed of the ground truth annotation for semantic segmentation. It is based on 19 categories, that are the same
+as in Cityscapes, so they are compatible. We use this dataset firstly for evaluating out model alone, so train and test on this dataset
+(obviusly the test data is not seen during training). Then this dataset is used as source domain in domain adaptation.
+\subsection{Cityscapes}
+Cityscapes dataset \cite{b5} is composed of 5000 fine annotated images, split into training, validation and test sets with 2975, 500
+and 1525 images respectively. The totale number of classes is 30, but only 19 are used for semantic segmentation. The resolution of the
+images is 2048 x 1024, this is very high resolution, in fact we reduced it to 1024 x 512. This dataset is first used for evauating our
+model alone, so train and test both on this dataset, then it is used as target domain for domain adaptation. 
+\subsection{Experiments results}
 
 We have done the following experiments: (1) train on Cityscapes and test on Cityscapes, (2) train on GTA5 and test on GTA5, (3) train on 
 GTA5 and test on Cityscapes without domain adaptation, (4) train on GTA5 and test on Cityscapes without domain adaptation with some
@@ -286,11 +294,11 @@ in the mIoU of 3\% with respect to (4).
 
 \section{Conclusion}
 
-In this paper we build a model based on BiSeNet \cite{} with a Short-Term Dense Concatenate network (STDC network) \cite{} as Context Path, 
-based on different STDC modules. Then we implement an adversarial domain adaptation mathod \cite{} to reduce the domain shift between GTA5
+In this paper we build a model based on BiSeNet \cite{b2} with a Short-Term Dense Concatenate network (STDC network) \cite{b1} as Context Path, 
+based on different STDC modules. Then we implement an adversarial domain adaptation mathod \cite{b3} to reduce the domain shift between GTA5
 and Cityscapes. From the experiments we can see that having a domain adaptation method can help in increasing the accuracy and mIoU. 
 Finally we develop a lighter and faster method for discriminate the source and target data in the domain adaptation
-method, based on MobileNets \cite{}. 
+method, based on MobileNets \cite{b6}. 
 
 \section*{Acknowledgment}
 
@@ -301,36 +309,14 @@ acknowledgments in the unnumbered footnote on the first page.
 
 \section*{References}
 
-Please number citations consecutively within brackets \cite{b1}. The 
-sentence punctuation follows the bracket \cite{b2}. Refer simply to the reference 
-number, as in \cite{b3}---do not use ``Ref. \cite{b3}'' or ``reference \cite{b3}'' except at 
-the beginning of a sentence: ``Reference \cite{b3} was the first $\ldots$''
-
-Number footnotes separately in superscripts. Place the actual footnote at 
-the bottom of the column in which it was cited. Do not put footnotes in the 
-abstract or reference list. Use letters for table footnotes.
-
-Unless there are six authors or more give all authors' names; do not use 
-``et al.''. Papers that have not been published, even if they have been 
-submitted for publication, should be cited as ``unpublished'' \cite{b4}. Papers 
-that have been accepted for publication should be cited as ``in press'' \cite{b5}. 
-Capitalize only the first word in a paper title, except for proper nouns and 
-element symbols.
-
-For papers published in translation journals, please give the English 
-citation first, followed by the original foreign-language citation \cite{b6}.
-
 \begin{thebibliography}{00}
-\bibitem{b1} G. Eason, B. Noble, and I. N. Sneddon, ``On certain integrals of Lipschitz-Hankel type involving products of Bessel functions,'' Phil. Trans. Roy. Soc. London, vol. A247, pp. 529--551, April 1955.
-\bibitem{b2} J. Clerk Maxwell, A Treatise on Electricity and Magnetism, 3rd ed., vol. 2. Oxford: Clarendon, 1892, pp.68--73.
-\bibitem{b3} I. S. Jacobs and C. P. Bean, ``Fine particles, thin films and exchange anisotropy,'' in Magnetism, vol. III, G. T. Rado and H. Suhl, Eds. New York: Academic, 1963, pp. 271--350.
-\bibitem{b4} K. Elissa, ``Title of paper if known,'' unpublished.
-\bibitem{b5} R. Nicole, ``Title of paper with only first word capitalized,'' J. Name Stand. Abbrev., in press.
-\bibitem{b6} Y. Yorozu, M. Hirano, K. Oka, and Y. Tagawa, ``Electron spectroscopy studies on magneto-optical media and plastic substrate interface,'' IEEE Transl. J. Magn. Japan, vol. 2, pp. 740--741, August 1987 [Digests 9th Annual Conf. Magnetics Japan, p. 301, 1982].
-\bibitem{b7} M. Young, The Technical Writer's Handbook. Mill Valley, CA: University Science, 1989.
+\bibitem{b1} Mingyuan Fan, Shenqi Lai, Junshi Huang, Xiaoming Wei, Zhenhua Chai, Junfeng Luo, Xiaolin Wei. Rethinking BiSeNet For Real-time Semantic Segmentation. 2021
+\bibitem{b2} Changqian Yu, Jingbo Wang, Chao Peng, Changxin Gao, Gang Yu, and Nong Sang. Bisenet: Bilateral segmentation network for real-time semantic segmentation. In European conference on computer vision (ECCV) 2018.
+\bibitem{b3} Yi-Hsuan Tsai, Wei-Chih Hung, Samuel Schulter, Kihyuk Sohn, Ming-Hsuan Yang, Manmohan Chandraker. Learning to Adapt Structured Output Space for Semantic Segmentation. In CVPR, 2018
+\bibitem{b4} S. R. Richter, V. Vineet, S. Roth, and V. Koltun. Playing for data: Ground truth from computer games. In ECCV, 2016.
+\bibitem{b5} M. Cordts, M. Omran, S. Ramos, T. Rehfeld, M. Enzweiler, R. Benenson, U. Franke, S. Roth, and B. Schiele. The cityscapes dataset for semantic urban scene understanding. In CVPR, 2016. 
+\bibitem{b6} Andrew G. Howard, Menglong Zhu, Bo Chen, Dmitry Kalenichenko, Weijun Wang, Tobias Weyand, Marco Andreetto, Hartwig Adam. MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications. 2017
 \end{thebibliography}
 \vspace{12pt}
-\color{red}
-IEEE conference templates contain guidance text for composing and formatting conference papers. Please ensure that all template text is removed from your conference paper prior to submission to the conference. Failure to remove the template text from your paper may result in your paper not being published.
 
 \end{document}
