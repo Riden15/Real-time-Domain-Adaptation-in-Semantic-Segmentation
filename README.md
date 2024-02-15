@@ -41,11 +41,11 @@ This repository provides a starter-code setup for the Real-time Domain Adaptatio
 
 ## Results
 
-| Train Datasets                                                                             | Val Datasets | Accuracy _(%)_ | mIoU _(%)_ | train Time (avg per-epochs) |
-|--------------------------------------------------------------------------------------------|--------------|----------------|------------|-----------------------------|
-| Cityscapes                                                                                 | Cityscapes   | 81             | 57.8       | 2:33 minutes                |
-| GTA                                                                                        | GTA          | 80.8           | 62         | 3:28 minutes                |
-| GTA                                                                                        | Cityscapes   | 60.1           | 24.6       | _None_                      |
-| GTA augmented                                                                              | Cityscapes   | 70.2           | 30.7       | 5:22 minutes                |
-| Single Layer DA <br/> Source=GTA, Target=Cityscapes                                        | Cityscapes   | 74.3           | 33.8       | 4:33 minutes                |
-| Single Layer DA <br/> Source=GTA, Target=Cityscapes <br/> Depthwise discriminator function | Cityscapes   | 73.1           | 32.7       | 4:32 minutes                |
+| Train Datasets                                                                             | Validation Datasets | Accuracy _(%)_ | mIoU _(%)_ | Train Time (avg per-epochs) |
+|--------------------------------------------------------------------------------------------|---------------------|----------------|------------|-----------------------------|
+| Cityscapes                                                                                 | Cityscapes          | 81             | 57.8       | 2:33 minutes                |
+| GTA                                                                                        | GTA                 | 80.8           | 62         | 3:28 minutes                |
+| GTA                                                                                        | Cityscapes          | 60.1           | 24.6       | _None_                      |
+| GTA augmented                                                                              | Cityscapes          | 70.2           | 30.7       | 5:22 minutes                |
+| Single Layer DA <br/> Source=GTA, Target=Cityscapes                                        | Cityscapes          | 74.3           | 33.8       | 4:33 minutes                |
+| Single Layer DA <br/> Source=GTA, Target=Cityscapes <br/> Depthwise discriminator function | Cityscapes          | 73.1           | 32.7       | 4:32 minutes                |
