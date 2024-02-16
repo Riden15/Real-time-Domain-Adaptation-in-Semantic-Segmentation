@@ -7,6 +7,7 @@
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
+\usepackage{booktabs}
 \usepackage{hyperref}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
@@ -225,12 +226,12 @@ precision in Fig.~\ref{precision}.
 (1) Here we train our model on Cityscapes train set and test it on Cityscapes validation set. Here there's no domain adaptation, so
 we expect to have high results. Table~\ref{TrainingTimaAndAccuracy} shows the results.
 
-(2) We train our model on GTA5 train set and test it on GTA5 validation set. Again we expect high results.  
+(2) We train our model on GTA5 train set and test it on GTA5 validation set. Again we expect high results.
 Table~\ref{TrainingTimaAndAccuracy} shows the results.
 
 (3) Here we evaluate the domain shift between GTA5 and Cityscapes. We train on GTA5 train set and test on Cityscapes validation set.
-Here we don't have any domain adaptation method, so we expect bad results. Table~\ref{TrainingTimaAndAccuracy} shows the results. We can 
-see that the mIoU is low, this because the source domain and target domain are different. 
+Here we don't have any domain adaptation method, so we expect bad results. Table~\ref{TrainingTimaAndAccuracy} shows the results. We can
+see that the mIoU is low, this because the source domain and target domain are different.
 
 (4) Again we evaluate the domain shift between GTA5 and Cityscapes, but this time with some augmentation on GTA5. Table~\ref{TrainingTimaAndAccuracy}
 shows the results and again the mIoU is low because of the domain shift, but higher than step (3). This thanks to the augmentation
@@ -241,9 +242,7 @@ with the segmentation network. Table~\ref{TrainingTimaAndAccuracy} shows the res
 in the mIoU of 3\% with respect to (4).
 
 (6) Finally we implement depthwise separable convolutions in the discriminator. Again same thing as (5) but with a lighter discriminator. Table
-~\ref{TrainingTimaAndAccuracy} shows the results. 
-
-
+~\ref{TrainingTimaAndAccuracy} shows the results.
 
 \begin{table}[]
 \caption{Prova}
@@ -258,6 +257,130 @@ GTA V -\textgreater Cityscapes w Data Augmentation       & 70.2          & 30.7 
 GTA V -\textgreater CityScapes w Domain Adaptation       & 74.3          & 33.8      & 4:33 minutes               \\
 GTA V -\textgreater CityScapes w Depthwise Discriminator & 73.1          & 32.7      & 4:32 minutes               \\ \bottomrule
 \end{tabular}
+\end{table}
+
+\begin{table}[tb]
+\caption{Train on Cityscapes train set and test it Cityscapes val set}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{\textbf{Cityscapes -$>$ Cityscapes}} \\
+\cline{1-3} 
+\textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
+\hline
+81.1& 58.6& 2.3 minutes   \\
+\hline
+\end{tabular}
+\label{CityscapesToCityscapes}
+\end{center}
+\end{table}
+
+\begin{table}[tb]
+\caption{Train on GTA5 train set and test it GTA5 val set}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{\textbf{GTA5 -$>$ GTA5}} \\
+\cline{1-3} 
+\textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
+\hline
+80.8& 62.3& 3.2 minutes   \\
+\hline
+\end{tabular}
+\label{GTATOGTA}
+\end{center}
+\end{table}
+
+\begin{table}[tb]
+\caption{Train on GTA5 train set and test it Cityscapes val set without adaptation}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{\textbf{GTA5 -$>$ Cityscapes}} \\
+\cline{1-3} 
+\textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
+\hline
+60.1 & 24.6 & 3.2 minutes \\
+\hline
+\end{tabular}
+\label{GTATOCITYSCAPESNOADAP}
+\end{center}
+\end{table}
+
+\begin{table}[tb]
+\caption{Train on GTA5 augemnted train set and test it Cityscapes val set without adaptation}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{\textbf{GTA5 -$>$ Cityscapes}} \\
+\cline{1-3} 
+\textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
+\hline
+71 & 30 & 5.37 minutes \\
+\hline
+\end{tabular}
+\label{GTATOCITYSCAPESNOADAPAUG}
+\end{center}
+\end{table}
+
+\begin{table}[tb]
+\caption{Train on GTA5 augemnted train set and test it Cityscapes val set with adaptation}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{\textbf{GTA5 -$>$ Cityscapes}} \\
+\cline{1-3} 
+\textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
+\hline
+74 & 33 & 4.30 minutes \\
+\hline
+\end{tabular}
+\label{GTATOCITYSCAPESADAP}
+\end{center}
+\end{table}
+
+\begin{table}[tb]
+\caption{Train on GTA5 augemnted train set and test it Cityscapes val set with lighter adaptation}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{\textbf{GTA5 -$>$ Cityscapes}} \\
+\cline{1-3} 
+\textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
+\hline
+73& 32.5& 4.25 minutes\\
+\hline
+\end{tabular}
+\label{GTATOCITYSCAPESADAPLIGHT}
+\end{center}
+\end{table}
+
+\begin{table}[tb]
+\centering
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\multicolumn{4}{c}{\begin{tabular}[c]{@{}c@{}}Passing a tensor of size (8, 19, 1024, 512)\\  to the Discriminator only once in the CPU\end{tabular}}                                                                 \\ \midrule
+                              & \begin{tabular}[c]{@{}c@{}}5800x\\ (sec)\end{tabular} & \begin{tabular}[c]{@{}c@{}}Colab CPU\\ (sec)\end{tabular} & \begin{tabular}[c]{@{}c@{}}Colab TPU \\ (sec)\end{tabular} \\
+Train Discriminator           & 0.93                                                        & 9.58                                                      & 6.55                                                       \\
+Train Depthwise Discriminator & 0.38                                                        & 1.74                                                      & 2.36                                                       \\
+Eval Discriminator            & 0.77                                                        & 6.02                                                      & 7.70                                                       \\
+Eval Depthwise Discriminator  & 0.37                                                        & 1.67                                                      & 1.85                                                       \\ \bottomrule
+\end{tabular}
+\label{tab:CPUTimeDiscminator}
+\end{table}
+
+\begin{table}[tb]
+\centering
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\multicolumn{4}{c}{\begin{tabular}[c]{@{}c@{}}Passing a tensor of size (32, 19, 1024, 512) \\ to the Discriminator 50 times in the GPU\end{tabular}}                                                                   \\ \midrule
+                              & \begin{tabular}[c]{@{}c@{}}RTX 4070\\ (sec)\end{tabular} & \begin{tabular}[c]{@{}c@{}}T4\\ (sec)\end{tabular} & \begin{tabular}[c]{@{}c@{}}T4 + RAM\\ (sec)\end{tabular} \\
+Train Discriminator           & 1.09                                                     & 2.25                                                      & 3.09                                                            \\
+Train Depthwise Discriminator & 2.02                                                     & 3.81                                                      & 4.19                                                            \\
+Eval Discriminator            & 2.02                                                     & 4.75                                                      & 4.98                                                            \\
+Eval Depthwise Discriminator  & 1.93                                                     & 3.83                                                      & 4.05                                                            \\ \bottomrule
+\end{tabular}
+\label{tab:GPUTimeDiscminator}
 \end{table}
 
 \section{Conclusion}
