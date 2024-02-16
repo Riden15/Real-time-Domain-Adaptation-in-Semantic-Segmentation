@@ -95,6 +95,8 @@ parlare di mobilenets, come lo usiamo
 We first introduce the Short-Term Dense Concatenate network (STDC network) and how we used it with BiSeNet \cite{b2},
 then the unsupervised adversarial domain adaptation method.
 
+\subsection{Short-Term Dense Concatenate Network}
+
 STDC network \cite{b1} is represented in Fig.~\ref{fig:stdc_net} (a). Stage 3,4 and 5 have a number of Short-Term Dense Concatenate Module (STDCM)
 where each module is composed of ConvX blocks Fig.~\ref{fig:stdc_net} (b)(c). Each \(ConvX_i\) is a block composed of one convolutional layer,
 one batch normalization layer and one ReLU activation layer. The ConvX layers filter the input into N/2, where N is the channel number
@@ -103,10 +105,53 @@ of the STDC module. At the end we concatenate the output of each ConvX block as 
 where \(x_{output}\) is the STDC module output, \(F\) is the fusion operation, that in our case is the concatenation and \(x_1,x_2,
 \dots,x_n\) are the output of each \(ConvX_i\) block.
 
+\begin{figure}[tp]
+\centerline{\includegraphics[width=0.4\textwidth]{figures/BiSeNet.pdf.png}}
+\caption{BiSeNet network.}
+\label{fig:bisenet}
+\end{figure}
+
+\subsection{BiSeNet}
+
+BiSeNet network is represented in Fig.~\ref{fig:bisenet}. It is mainly composed of two part: Spacial Path and Context Path. 
+
+\textbf{Spacial Path}.
+Some models for real-time semantic segmentation decide to give as input a smaller image to increase the performance, but this reduce the Spacial
+information of the original image resulting in a drop of accuracy. Others use lightweight models, but the spacial information is again
+lost during the channel pruning. The Spacial Path that is used in BiSeNet is composed of three blocks each containing a convolution
+with stride = 2, one batch normalization and ReLU activation function. This extracts a feature map that is 1/8 of the original image and
+keeps a lot of spacial infromation. 
+
+\textbf{Context Path}.
 This STDC network is then used as backbone for the context path of BiSeNet, in particular we use stage 3,4 and 5 to reduce the 
-feature map to obtain large receptive field. Then a global avarage pooling in added on the tial of the context path. We also use
+feature map to obtain large receptive field. Then a global avarage pooling in added on the tail of the context path. We also use
 Attention Refine Module (ARM) on Stage 4 and 5. Finally a Future Fusion Model (FFM) is used to fuse the 1/8
-feature from Stage 3 with this last part.
+features from the spacial path with this last part.
+
+\textbf{Attention Refine Module}
+\begin{figure}[tp]
+\centerline{\includegraphics[width=0.4\textwidth]{figures/ARM.pdf.png}}
+\caption{Attention Refine Module}
+\label{fig:arm}
+\end{figure}
+
+Fig.~\ref{fig:arm} represent the Attention Refine Module (ARM). This is used in the Context Path and refines the feature of the last
+two stages. It uses a global avarage pooling that capture the global context and computes an attention vector to guide the feature learning.
+
+\textbf{Future Fusion Model}
+
+Fig.~\ref{fig:ffm} represent the Future Fusion Model (FFM). This fuse the output of the Context Path, given by the STCD network with 
+the output of the Spacial Path. The main problem of fusing these two path is that they have two different level of representation. The
+Context Path represent the context information, meanwhile the Spatial Path represent the spatial information so we can't just sum them
+up. Figure.~\ref{fig:ffm} shows the datails. 
+
+\begin{figure}[tp]
+\centerline{\includegraphics[width=0.4\textwidth]{figures/FFM.pdf.png}}
+\caption{Future Fusion Model}
+\label{fig:ffm}
+\end{figure}
+
+\subsection{Adversarial Domain Adaptation}
 
 The main idea of the unsupervised adversarial domain adaptation method \cite{b3} is to create a segmentation network that classify the source
 image (that as a label) and the target image (without annotations). Then those two predictions are given to the discriminator that
