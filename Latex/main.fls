@@ -240,8 +240,6 @@ INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/vf/adobe/times/ptmb7t.vf
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/times/ptmb8r.tfm
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/vf/adobe/times/ptmrc7t.vf
-INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/vf/adobe/times/ptmb7t.vf
-INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/times/ptmb8r.tfm
 INPUT ./figures/loss.png
 INPUT ./figures/loss.png
 INPUT ./figures/loss.png
@@ -264,6 +262,8 @@ INPUT ./figures/precision.png
 INPUT ./figures/precision.png
 INPUT ./figures/precision.png
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/times/ptmrc7t.tfm
+INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/vf/adobe/times/ptmb7t.vf
+INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/times/ptmb8r.tfm
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/vf/adobe/times/ptmrc7t.vf
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/adobe/times/ptmr8r.tfm
 INPUT /Users/nicholas.berardo/Library/Application Support/MiKTeX/texmfs/install/fonts/vf/adobe/times/ptmb7t.vf
