@@ -107,7 +107,7 @@ where \(x_{output}\) is the STDC module output, \(F\) is the fusion operation, t
 \dots,x_n\) are the output of each \(ConvX_i\) block.
 
 \begin{figure}[tp]
-\centerline{\includegraphics[width=0.4\textwidth]{figures/BiSeNet.pdf.png}}
+\centerline{\includegraphics[width=0.4\textwidth]{figures/BiSeNet}}
 \caption{BiSeNet network.}
 \label{fig:bisenet}
 \end{figure}
@@ -131,7 +131,7 @@ features from the spacial path with this last part.
 
 \textbf{Attention Refine Module}
 \begin{figure}[tp]
-\centerline{\includegraphics[width=0.4\textwidth]{figures/ARM.pdf.png}}
+\centerline{\includegraphics[width=0.4\textwidth]{figures/ARM}}
 \caption{Attention Refine Module}
 \label{fig:arm}
 \end{figure}
@@ -147,7 +147,7 @@ Context Path represent the context information, meanwhile the Spatial Path repre
 up. Figure.~\ref{fig:ffm} shows the datails. 
 
 \begin{figure}[tp]
-\centerline{\includegraphics[width=0.4\textwidth]{figures/FFM.pdf.png}}
+\centerline{\includegraphics[width=0.4\textwidth]{figures/FFM}}
 \caption{Future Fusion Model}
 \label{fig:ffm}
 \end{figure}
@@ -166,6 +166,8 @@ We first forward \(I_s\) to the segmentation network to get the prediction \(P_s
 Then forward \(I_t\) to the segmentation network to get the prediction \(P_t\) and feed \(P_s\) to the discriminator and get the
 \(L_{adv}\) and optimize the segmentation network. Now let's optimize the discriminator computing first the loss on the GTA5 image
 with label 1 and finally computing the loss on the Cityscape image, with label 0. 
+
+\subsection{Depthwise Separable Convolution}
 
 Finally we also tried to apply some real-time semantic segmentation method to our discriminator to make is lighter and faster.
 We build a discriminator using depthwise separable convolutions, following MobileNets \cite{b6}. These are composed of two part: 
