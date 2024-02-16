@@ -15,7 +15,7 @@ import torch.cuda.amp as amp
 from utils import poly_lr_scheduler
 from utils import reverse_one_hot, compute_global_accuracy, fast_hist, per_class_iu
 from tqdm import tqdm
-from model.discriminator import Discriminator, DepthwiseDiscriminator
+from model.discriminator import Discriminator, DiagonalwiseDiscriminator, DepthwiseDiscriminator
 
 logger = logging.getLogger()
 
@@ -300,8 +300,8 @@ def parse_args():
                        )
     parse.add_argument('--depthwise_discriminator',
                        dest='depthwise_discriminator',
-                       type=str2bool,
-                       default=False,
+                       type=str,
+                       default='',
                        )
     parse.add_argument('--train_dataset',
                        dest='train_dataset',
@@ -506,8 +506,10 @@ def main():
                                     drop_last=True)
         
         # create Discriminator class
-        if args.depthwise_discriminator:
+        if args.depthwise_discriminator == 'depthwise':
             discriminator = DepthwiseDiscriminator(in_channels=n_classes)
+        elif args.depthwise_discriminator == 'diagonalwise':
+            discriminator = DiagonalwiseDiscriminator(in_channels=n_classes)
         else:
             discriminator = Discriminator(in_channels=n_classes)
 

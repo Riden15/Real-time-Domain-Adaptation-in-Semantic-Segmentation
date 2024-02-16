@@ -1,3 +1,5 @@
+import numpy as np
+import torch
 import torch.nn as nn
 from torchinfo import summary
 
@@ -88,6 +90,74 @@ class DepthwiseDiscriminator(nn.Module):
         )
 
         # Upsampling layer to resize the output to the input size
+        self.upsample = nn.Upsample(scale_factor=scale_factor, mode='bilinear', align_corners=False)
+
+    def forward(self, x):
+        x = self.conv_layers(x)
+        x = self.upsample(x)
+        return x
+
+
+class DiagonalwiseRefactorization(nn.Module):
+    def __init__(self, in_channels, stride=1, groups=1):
+        super(DiagonalwiseRefactorization, self).__init__()
+        channels = in_channels // groups
+        self.in_channels = in_channels
+        self.groups = groups
+        self.stride = stride
+        self.mask = nn.Parameter(torch.Tensor(get_mask(in_channels, channels)), requires_grad=False)
+        self.weight = nn.Parameter(torch.Tensor(in_channels, channels, 4, 4), requires_grad=True)
+        torch.nn.init.xavier_uniform_(self.weight.data)
+        self.weight.data.mul_(self.mask.data)
+
+    def forward(self, x):
+        weight = torch.mul(self.weight, self.mask)
+        x = torch.nn.functional.conv2d(x, weight, bias=None, stride=self.stride, padding=1, groups=self.groups)
+        return x
+
+
+def DepthwiseConv2d(in_channels, stride=1):
+    groups = max(in_channels // 32, 1)
+    return DiagonalwiseRefactorization(in_channels, stride, groups)
+
+
+def PointwiseConv2d(in_channels, out_channels):
+    return nn.Conv2d(in_channels, out_channels, 1, stride=1, padding=0, bias=False)
+
+
+def get_mask(in_channels, channels):
+    mask = np.zeros((in_channels, channels, 4, 4))
+    for _ in range(in_channels):
+        mask[_, _ % channels, :, :] = 1.
+    return mask
+
+class DiagonalwiseDiscriminator(nn.Module):
+    def __init__(self, in_channels, out_channels=1, stride=2, scale_factor=32):
+        super(DiagonalwiseDiscriminator, self).__init__()
+        self.conv_layers = nn.Sequential(
+            DepthwiseConv2d(in_channels, stride),
+            nn.LeakyReLU(0.2, inplace=True),
+            PointwiseConv2d(in_channels, 64),
+            nn.LeakyReLU(0.2, inplace=True),
+
+            DepthwiseConv2d(64, stride),
+            nn.LeakyReLU(0.2, inplace=True),
+            PointwiseConv2d(64, 128),
+            nn.LeakyReLU(0.2, inplace=True),
+
+            DepthwiseConv2d(128, stride),
+            nn.LeakyReLU(0.2, inplace=True),
+            PointwiseConv2d(128, 256),
+            nn.LeakyReLU(0.2, inplace=True),
+
+            DepthwiseConv2d(256, stride),
+            nn.LeakyReLU(0.2, inplace=True),
+            PointwiseConv2d(256, 512),
+            nn.LeakyReLU(0.2, inplace=True),
+
+            DepthwiseConv2d(512, stride),
+            PointwiseConv2d(512, out_channels),
+        )
         self.upsample = nn.Upsample(scale_factor=scale_factor, mode='bilinear', align_corners=False)
 
     def forward(self, x):
