@@ -175,6 +175,22 @@ depthwise convolution layer, leaky ReLU, pointwise convolution and again leaky R
 
 \section{Experiments}
 
+\begin{table*}[]
+\centering
+\caption{Prova}
+\label{TrainingTimaAndAccuracy}
+\begin{tabular}{@{}llll@{}}
+\toprule
+                                                         & Accuracy (\%) & mIoU (\%) & Train time (avg per-epoch) \\ \midrule
+Cityscapes -\textgreater Cityscapes                      & 81.1          & 57.8      & 2:33 minutes               \\
+GTA V -\textgreater GTA V                                & 80.8          & 62        & 3:28 minutes               \\
+GTA V -\textgreater Cityscapes w/o Data Augmentation     & 60.1          & 24.6      & 3:28 minutes               \\
+GTA V -\textgreater Cityscapes w Data Augmentation       & 70.2          & 30.7      & 5:22 minutes               \\
+GTA V -\textgreater CityScapes w Domain Adaptation       & 74.3          & 33.8      & 4:33 minutes               \\
+GTA V -\textgreater CityScapes w Depthwise Discriminator & 73.1          & 32.7      & 4:32 minutes               \\ \bottomrule
+\end{tabular}
+\end{table*}
+
 \begin{figure}[tp]
 \centerline{\includegraphics[width=0.4\textwidth]{figures/loss}}
 \caption{Loss step during training. On the X we have the epochs, on Y we have the loss. (1) is the gray curve, (2) is the light blue
@@ -244,118 +260,9 @@ in the mIoU of 3\% with respect to (4).
 (6) Finally we implement depthwise separable convolutions in the discriminator. Again same thing as (5) but with a lighter discriminator. Table
 ~\ref{TrainingTimaAndAccuracy} shows the results.
 
+
+
 \begin{table}[]
-\caption{Prova}
-\label{TrainingTimaAndAccuracy}
-\begin{tabular}{@{}llll@{}}
-\toprule
-                                                         & Accuracy (\%) & mIoU (\%) & Train time (avg per-epoch) \\ \midrule
-Cityscapes -\textgreater Cityscapes                      & 81.1          & 57.8      & 2:33 minutes               \\
-GTA V -\textgreater GTA V                                & 80.8          & 62        & 3:28 minutes               \\
-GTA V -\textgreater Cityscapes w/o Data Augmentation     & 60.1          & 24.6      & 3:28 minutes               \\
-GTA V -\textgreater Cityscapes w Data Augmentation       & 70.2          & 30.7      & 5:22 minutes               \\
-GTA V -\textgreater CityScapes w Domain Adaptation       & 74.3          & 33.8      & 4:33 minutes               \\
-GTA V -\textgreater CityScapes w Depthwise Discriminator & 73.1          & 32.7      & 4:32 minutes               \\ \bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[tb]
-\caption{Train on Cityscapes train set and test it Cityscapes val set}
-\begin{center}
-\begin{tabular}{|c|c|c|}
-\hline
-\multicolumn{3}{|c|}{\textbf{Cityscapes -$>$ Cityscapes}} \\
-\cline{1-3} 
-\textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
-\hline
-81.1& 58.6& 2.3 minutes   \\
-\hline
-\end{tabular}
-\label{CityscapesToCityscapes}
-\end{center}
-\end{table}
-
-\begin{table}[tb]
-\caption{Train on GTA5 train set and test it GTA5 val set}
-\begin{center}
-\begin{tabular}{|c|c|c|}
-\hline
-\multicolumn{3}{|c|}{\textbf{GTA5 -$>$ GTA5}} \\
-\cline{1-3} 
-\textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
-\hline
-80.8& 62.3& 3.2 minutes   \\
-\hline
-\end{tabular}
-\label{GTATOGTA}
-\end{center}
-\end{table}
-
-\begin{table}[tb]
-\caption{Train on GTA5 train set and test it Cityscapes val set without adaptation}
-\begin{center}
-\begin{tabular}{|c|c|c|}
-\hline
-\multicolumn{3}{|c|}{\textbf{GTA5 -$>$ Cityscapes}} \\
-\cline{1-3} 
-\textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
-\hline
-60.1 & 24.6 & 3.2 minutes \\
-\hline
-\end{tabular}
-\label{GTATOCITYSCAPESNOADAP}
-\end{center}
-\end{table}
-
-\begin{table}[tb]
-\caption{Train on GTA5 augemnted train set and test it Cityscapes val set without adaptation}
-\begin{center}
-\begin{tabular}{|c|c|c|}
-\hline
-\multicolumn{3}{|c|}{\textbf{GTA5 -$>$ Cityscapes}} \\
-\cline{1-3} 
-\textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
-\hline
-71 & 30 & 5.37 minutes \\
-\hline
-\end{tabular}
-\label{GTATOCITYSCAPESNOADAPAUG}
-\end{center}
-\end{table}
-
-\begin{table}[tb]
-\caption{Train on GTA5 augemnted train set and test it Cityscapes val set with adaptation}
-\begin{center}
-\begin{tabular}{|c|c|c|}
-\hline
-\multicolumn{3}{|c|}{\textbf{GTA5 -$>$ Cityscapes}} \\
-\cline{1-3} 
-\textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
-\hline
-74 & 33 & 4.30 minutes \\
-\hline
-\end{tabular}
-\label{GTATOCITYSCAPESADAP}
-\end{center}
-\end{table}
-
-\begin{table}[tb]
-\caption{Train on GTA5 augemnted train set and test it Cityscapes val set with lighter adaptation}
-\begin{center}
-\begin{tabular}{|c|c|c|}
-\hline
-\multicolumn{3}{|c|}{\textbf{GTA5 -$>$ Cityscapes}} \\
-\cline{1-3} 
-\textbf{\textit{Accuracy (\%)}}& \textbf{\textit{mIoU (\%)}}& \textbf{\textit{Train time (avg per-epoch)}} \\
-\hline
-73& 32.5& 4.25 minutes\\
-\hline
-\end{tabular}
-\label{GTATOCITYSCAPESADAPLIGHT}
-\end{center}
-\end{table}
-
-\begin{table}[tb]
 \centering
 \begin{tabular}{@{}lccc@{}}
 \toprule
@@ -369,7 +276,7 @@ Eval Depthwise Discriminator  & 0.37                                            
 \label{tab:CPUTimeDiscminator}
 \end{table}
 
-\begin{table}[tb]
+\begin{table}[]
 \centering
 \begin{tabular}{@{}lccc@{}}
 \toprule
