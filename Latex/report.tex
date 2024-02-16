@@ -40,7 +40,7 @@ sXXXXXX@studenti.polito.it}
 
 \begin{abstract}
 We use an efficient structure named Short-Term Dense Concatenate network (STDC network) for the semantic segmentation task. This
-structre reduce the dimension of feature maps and use the aggregation of them for image representation, then use a Detail aggregation
+structure reduce the dimension of feature maps and use the aggregation of them for image representation, then use a Detail aggregation
 module for producing the low-level features. Finally these two are merged to produce the segmentation result. We test this model on 
 Cityscapes and GTA V, following the evaluation of the domain shift between GTA V and Cityscapes and finally we implement and 
 unsupervised adversarial domain adaptation method used for reducing the domain shift. We also show the result for the STDC network in
@@ -50,19 +50,19 @@ term of mIoU and the result for the domain adaptation.
 
 \section{Introduction}
 Semantic Segmentation is a topic in computer vision that aims at assigning a label to each pixel of the image. This is used in many fields
-such as autonomous veichle, video surveillance and robot sensing. There are a lot of models that can achive good accuracy. For real-time
+such as autonomous vehicle, video surveillance and robot sensing. There are a lot of models that can achive good accuracy. For real-time
 semantic segmentation some models choose lightweight backbones for having an increase of performance but a drastic drop of accuracy. For
 this reason some new methods were investigated, like feature fusion or aggregation modules. Other models reduce the input image size 
 but this can result in a bad accuracy around boundaries and small object. 
 
-STDC net \cite{b1} uses the first approach. Fig.~\ref{stdc_net} shows how the image is encoded in different scales. The kernel size is also reduced
+STDC net \cite{b1} uses the first approach. Fig.~\ref{fig:stdc_net} shows how the image is encoded in different scales. The kernel size is also reduced
 to speed-up the performance but with an acceptable loss in accuracy. Then a Detail Guidance is used to learn the space details insted of 
 using a Spacial Path as in BiSeNet \cite{b2}.
 
 The next step is domain adaptation. A model trained on a certain dataset may not generalize on an unseen dataset ending in poor performance.
-This is caused by the domain shift beetween the source (training) and terget (test) dataset, for example different cities, weather and 
+This is caused by the domain shift between the source (training) and target (test) dataset, for example different cities, weather and
 lighting conditions. Domain adaptation methods are used to close the gap between source and target domains. In this paper we use an 
-adversarial domain adaptation method \cite{b3} that is composed of a segmentation model to predict the output and a discriminator to
+adversarial domain adaptation method \cite{b3} composed of a segmentation model to predict the output and a discriminator to
 predict is the input is from the source or target domain. The goal is to generate a segmentation output from the segmentation part that 
 fool the discriminator, meaning that the segmentation output is similar between source and target domains. We show experiments done on 
 the adaptation between GTAV and Cityscapes.
@@ -72,14 +72,14 @@ First we build the STDC network and train it on Cityscapes and test it again on 
 GTAV dataset, so train on GTAV and test on GTAV. Third we compute the domain shift between GTAV (source) and Cityscapes (target) domains
 firstly in vanilla, then with some augmentation on GTAV. Fourth we implement the adversarial domain adaptation method and test it 
 with GTAV as source domain and Cityscapes as target domain. Lastly we apply some real-time semantic segmentation method to our 
-discriminator function in order to make it faster. 
+discriminator function to make it faster.
 
 Here a look to our implementation: \url{https://github.com/Riden15/Real-time-Domain-Adaptation-in-Semantic-Segmentation}
 
 \begin{figure}[tp]
-\centerline{\includegraphics[width=0.4\textwidth]{figures/Figure1-STDCnet.png}}
+\centerline{\includegraphics[width=0.4\textwidth]{figures/Figure1-STDCnet}}
 \caption{STDC network.}
-\label{stdc_net}
+\label{fig:stdc_net}
 \end{figure}
 
 \section{Related Word}
@@ -95,13 +95,13 @@ parlare di mobilenets, come lo usiamo
 We first introduce the Short-Term Dense Concatenate network (STDC network) and how we used it with BiSeNet \cite{b2},
 then the unsupervised adversarial domain adaptation method.
 
-STDC network \cite{b1} is represented in Fig.~\ref{stdc_net} (a). Stage 3,4 and 5 have a number of Short-Term Dense Concatenate Module (STDCM)
-where each module is composed of ConvX blocks Fig.~\ref{stdc_net} (b)(c). Each \(ConvX_i\) is a block composed of one convolutional layer,
+STDC network \cite{b1} is represented in Fig.~\ref{fig:stdc_net} (a). Stage 3,4 and 5 have a number of Short-Term Dense Concatenate Module (STDCM)
+where each module is composed of ConvX blocks Fig.~\ref{fig:stdc_net} (b)(c). Each \(ConvX_i\) is a block composed of one convolutional layer,
 one batch normalization layer and one ReLU activation layer. The ConvX layers filter the input into N/2, where N is the channel number
 of the STDC module. At the end we concatenate the output of each ConvX block as follow: 
-\[x_{output} = F(x_1,x_2,...,x_n)\]
+\[x_{output} = F(x_1,x_2,\dots,x_n)\]
 where \(x_{output}\) is the STDC module output, \(F\) is the fusion operation, that in our case is the concatenation and \(x_1,x_2,
-...,x_n\) are the output of each \(ConvX_i\) block.
+\dots,x_n\) are the output of each \(ConvX_i\) block.
 
 This STDC network is then used as backbone for the context path of BiSeNet, in particular we use stage 3,4 and 5 to reduce the 
 feature map to obtain large receptive field. Then a global avarage pooling in added on the tial of the context path. We also use
@@ -111,40 +111,40 @@ feature from Stage 3 with this last part.
 The main idea of the unsupervised adversarial domain adaptation method \cite{b3} is to create a segmentation network that classify the source
 image (that as a label) and the target image (without annotations). Then those two predictions are given to the discriminator that
 has to distinguish whether the input is from source or target domain. To do so we need a loss from the discriminator to the 
-segmentation network which encourage the segmentation to generate similar preditions. We use as segmentation newtork the BiSeNet 
+segmentation network which encourage the segmentation to generate similar predictions. We use as segmentation newtork the BiSeNet
 developed above. The loss is 
 \[L(I_s,I_t) = L_{seg}(I_s) + \lambda_{adv}*L_{adv}(I_t)\]
 where \(L_{seg}\) is the cross entropy loss for the prediction of the source domain, \(\lambda_{adv}\) is the weight used to 
 balance the \(L_{adv}\) that is a BCEWithLogitLoss.
-We first forward \(I_s\) to the segmentation newtork to get the predition \(P_s\) and the loss \(L_{seg}\) using the label of \(I_s\).
-Then forward \(I_t\) to the segmentation network to get the predition \(P_t\) and feed \(P_s\) to the discriminator and get the 
+We first forward \(I_s\) to the segmentation network to get the prediction \(P_s\) and the loss \(L_{seg}\) using the label of \(I_s\).
+Then forward \(I_t\) to the segmentation network to get the prediction \(P_t\) and feed \(P_s\) to the discriminator and get the
 \(L_{adv}\) and optimize the segmentation network. Now let's optimize the discriminator computing first the loss on the GTA5 image
 with label 1 and finally computing the loss on the Cityscape image, with label 0. 
 
-Finally we also tried to apply some real-time semanitc segmentation method to our discriminator to make is lighter and faster.
+Finally we also tried to apply some real-time semantic segmentation method to our discriminator to make is lighter and faster.
 We build a discriminator using depthwise separable convolutions, following MobileNets \cite{b6}. These are composed of two part: 
 depthwise convolutions and pointwise convolutions. Depthwise convolutions are used to filter each input channel, but they can
 only filter so we use pointwise convolutions (1 x 1 kernel size) to generate new features. Now our discriminator is based on blocks of
-depthwise convolution layer, leaky ReLU, pointwise convolution and again leaky ReLU. 
+depthwise convolution layer, leaky ReLU, pointwise convolution and again leaky ReLU.
 
 \section{Experiments}
 
 \begin{figure}[tp]
-\centerline{\includegraphics[width=0.4\textwidth]{figures/loss.png}}
+\centerline{\includegraphics[width=0.4\textwidth]{figures/loss}}
 \caption{Loss step during training. On the X we have the epochs, on Y we have the loss. (1) is the gray curve, (2) is the light blue
 curve, (3) is the light blue curve again, (4) is the pink curve, (5) is the orange curve and (6) is the purple curve.}
 \label{loss_steps}
 \end{figure}
 
 \begin{figure}[tp]
-\centerline{\includegraphics[width=0.4\textwidth]{figures/miou.png}}
+\centerline{\includegraphics[width=0.4\textwidth]{figures/miou}}
 \caption{mIoU during training. On the X we have the epochs, on Y we have the mIoU. (1) is the gray curve, (2) is the light blue
 curve, (4) is the pink curve, (5) is the orange curve and (6) is the purple curve.}
 \label{miou}
 \end{figure}
 
 \begin{figure}[tp]
-\centerline{\includegraphics[width=0.4\textwidth]{figures/precision.png}}
+\centerline{\includegraphics[width=0.4\textwidth]{figures/precision}}
 \caption{Precision during training. On the X we have the epochs, on Y we have the precision. (1) is the gray curve, (2) is the light blue
 curve, (4) is the pink curve, (5) is the orange curve and (6) is the purple curve.}
 \label{precision}
@@ -166,7 +166,7 @@ We have done the following experiments: (1) train on Cityscapes and test on City
 GTA5 and test on Cityscapes without domain adaptation, (4) train on GTA5 and test on Cityscapes without domain adaptation with some
 augmentation on GTA5, (5) train on GTA5 and test on Cityscapes with domain adaptation and (6) train on GTA5 and test on Cityscapes with
 domain adaptation with a lighter discriminator. 
-We use as optimizer the SGD (Stocastic Gradient Descent) with momentum set at 0.9 and weight decay at \(5e^{-4}\). We use a batch size of 
+We use as optimizer the SGD (Stochastic Gradient Descent) with momentum set at 0.9 and weight decay at \(5e^{-4}\). We use a batch size of
 2 and poly learning rate where the learning rate is updated as follow \(lr = init\_lr * (1 - \frac{iter}{max\_iter})^{power}\), where
 \(init\_lr\) is 0.01, \(iter\) is the actual epoch, \(max\_iter\) is the number of epochs and \(power\) is 0.9. Data augmentation, when
 used, contains Color Jitter, Random Horizontal Flip, Random Crop and Normalization. The disciminator for the domain apadtation part
@@ -177,7 +177,7 @@ In Fig.~\ref{loss_steps} we can see the loss step during train time. The one tha
 where there isn't a domain shift. Same thing happend with the mean Intersection over Union (mIoU) in Fig.~\ref{miou} and with the
 precision in Fig.~\ref{precision}. 
 
-(1) Here we trained our model on Cityscapes train set and test it on Cityscapes validation set. Here there's no domain adaptation, so
+(1) Here we train our model on Cityscapes train set and test it on Cityscapes validation set. Here there's no domain adaptation, so
 we expect to have high results. Table~\ref{CityscapesToCityscapes} shows the results.
 
 (2) We train our model on GTA5 train set and test it on GTA5 validation set. Again we expect high results.  
@@ -188,7 +188,7 @@ Here we don't have any domain adaptation method, so we expect bad results. Table
 see that the mIoU is low, this because the source domain and target domain are different. 
 
 (4) Again we evaluate the domain shift between GTA5 and Cityscapes, but this time with some augmentation on GTA5. Table~\ref{GTATOCITYSCAPESNOADAPAUG}
-shows the results and again the mIoU is low beacause of the domain shift, but higher than step (3). This thanks to the augmentation 
+shows the results and again the mIoU is low because of the domain shift, but higher than step (3). This thanks to the augmentation
 done on GTA5.
 
 (5) Here we have domain adaptation \cite{b3}. So we train on GTA5 and test on Cityscapes, but this time we train also the discriminator
