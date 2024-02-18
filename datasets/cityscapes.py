@@ -33,6 +33,7 @@ class CityScapes(Dataset):
     __len__()
         Returns the length of the data
     """
+
     def __init__(self, mode, data_path="datasets/Cityscapes/images/", label_path="datasets/Cityscapes/gtFine/",
                  transformations=False, args=None):
         super(CityScapes, self).__init__()

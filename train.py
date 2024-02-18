@@ -83,6 +83,7 @@ def train(args, model, optimizer, dataloader_train, dataloader_val):
             data = data.cuda()
             label = label.long().cuda()
             optimizer.zero_grad()
+            print(f'data shape: {data.shape}')
 
             with amp.autocast():
                 output, out16, out32 = model(data)
@@ -242,7 +243,8 @@ def train_adversarial(args, G, D, optimizer_G, optimizer_D, dataloader_gta5, dat
             total_time = total_time + time
             tq.update(args.batch_size)
             tq.set_postfix(loss_seg='%.6f' % loss_seg, loss_adv='%.6f' % loss_adv, loss_cs='%.6f' % loss_d_cityscapes,
-                           loss_gta='%.6f' % loss_d_gta5, total_loss='%.6f' % total_loss, atime='%.6f' % time, abtime='%.6f' % (total_time/float(i+1)))
+                           loss_gta='%.6f' % loss_d_gta5, total_loss='%.6f' % total_loss, atime='%.6f' % time,
+                           abtime='%.6f' % (total_time / float(i + 1)))
             step += 1
             writer.add_scalar('seg_loss_step', loss_seg, step)
             writer.add_scalar('adv_loss_step', loss_adv, step)
@@ -504,7 +506,7 @@ def main():
                                     num_workers=args.num_workers,
                                     pin_memory=False,
                                     drop_last=True)
-        
+
         # create Discriminator class
         if args.depthwise_discriminator == 'depthwise':
             discriminator = DepthwiseDiscriminator(in_channels=n_classes)
@@ -524,8 +526,10 @@ def main():
             discriminator = torch.nn.DataParallel(discriminator).cuda()
 
         # train loop
-        train_adversarial(args, G=model, D=discriminator, optimizer_G=optimizer_G, optimizer_D=optimizer_D, dataloader_gta5=GTA_dataloader,
-                          dataloader_cityscapes=cityscapes_dataloader_train, dataloader_val_cityscapes=cityscapes_dataloader_val)
+        train_adversarial(args, G=model, D=discriminator, optimizer_G=optimizer_G, optimizer_D=optimizer_D,
+                          dataloader_gta5=GTA_dataloader,
+                          dataloader_cityscapes=cityscapes_dataloader_train,
+                          dataloader_val_cityscapes=cityscapes_dataloader_val)
 
         # final test
         val(args, model, cityscapes_dataloader_val)
@@ -560,3 +564,11 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+#    model = BiSeNet(backbone='CatmodelSmall', n_classes=19)
+#    summary(model=model,
+#            input_size=(8, 3, 1024, 512),
+#            col_names=["input_size", "output_size", "num_params", "trainable"],
+#            col_width=20,
+#            row_settings=["var_names"]
+#            )

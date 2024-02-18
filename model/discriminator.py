@@ -131,6 +131,7 @@ def get_mask(in_channels, channels):
         mask[_, _ % channels, :, :] = 1.
     return mask
 
+
 class DiagonalwiseDiscriminator(nn.Module):
     def __init__(self, in_channels, out_channels=1, stride=2, scale_factor=32):
         super(DiagonalwiseDiscriminator, self).__init__()
@@ -169,13 +170,13 @@ class DiagonalwiseDiscriminator(nn.Module):
 # model = Discriminator(in_channels=input_channels)
 # model2 = DepthwiseDiscriminator(in_channels=input_channels)
 # summary(model=model, 
-#         input_size=(32, 19, 128, 64), # make sure this is "input_size", not "input_shape"
+#         input_size=(32, 19, 128, 64),
 #         col_names=["input_size", "output_size", "num_params", "trainable"],
 #         col_width=20,
 #         row_settings=["var_names"]
 # )
 # summary(model=model2, 
-#         input_size=(32, 19, 128, 64), # make sure this is "input_size", not "input_shape"
+#         input_size=(32, 19, 128, 64),
 #         col_names=["input_size", "output_size", "num_params", "trainable"],
 #         col_width=20,
 #         row_settings=["var_names"]

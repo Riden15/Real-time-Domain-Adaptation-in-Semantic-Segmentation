@@ -136,11 +136,11 @@ class STDCNet813(nn.Module):
         self.linear = nn.Linear(max(1024, base * 16), num_classes, bias=False)
 
         # if I understand correctly, these are the 5 stages
-        self.x2 = nn.Sequential(self.features[:1]) #Stage1
-        self.x4 = nn.Sequential(self.features[1:2]) #Stage2
-        self.x8 = nn.Sequential(self.features[2:4]) #Stage3 composed of 2 modules
-        self.x16 = nn.Sequential(self.features[4:6]) #Stage 4 composed of 2 modules
-        self.x32 = nn.Sequential(self.features[6:]) #Stage 5 composed of 2 modules
+        self.x2 = nn.Sequential(self.features[:1])  # Stage1
+        self.x4 = nn.Sequential(self.features[1:2])  # Stage2
+        self.x8 = nn.Sequential(self.features[2:4])  # Stage3 composed of 2 modules
+        self.x16 = nn.Sequential(self.features[4:6])  # Stage 4 composed of 2 modules
+        self.x32 = nn.Sequential(self.features[6:])  # Stage 5 composed of 2 modules
 
         if pretrain_model:
             print('use pretrain model {}'.format(pretrain_model))
@@ -149,7 +149,7 @@ class STDCNet813(nn.Module):
             self.init_params()
 
     def init_weight(self, pretrain_model):
-        
+
         state_dict = torch.load(pretrain_model)["state_dict"]
         self_state_dict = self.state_dict()
         for k, v in state_dict.items():
@@ -192,9 +192,9 @@ class STDCNet813(nn.Module):
     def forward(self, x):
         feat2 = self.x2(x)
         feat4 = self.x4(feat2)
-        feat8 = self.x8(feat4) #Stage3
-        feat16 = self.x16(feat8) #Stage4
-        feat32 = self.x32(feat16) #Stage5
+        feat8 = self.x8(feat4)  # Stage3
+        feat16 = self.x16(feat8)  # Stage4
+        feat32 = self.x32(feat16)  # Stage5
         if self.use_conv_last:
             feat32 = self.conv_last(feat32)
 
