@@ -1,6 +1,7 @@
 # Real-time Domain Adaptation in Semantic Segmentation [(Course Project)](https://drive.google.com/file/d/1amm6H_718IabI4bn0OIpsIPSyMl-vku4/view?usp=sharing)
 
 This repository provides a starter-code setup for the Real-time Domain Adaptation in Semantic Segmentation project of the Advance Machine Learning Course.
+[(Presentation of the project)](https://docs.google.com/presentation/d/1lHh8dqwLNbEosRksrbK0v-95BKZ6E8XWTjc9Wk5nuMc/edit?usp=sharing)
 
 ## Package
 
